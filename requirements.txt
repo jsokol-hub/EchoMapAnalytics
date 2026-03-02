@@ -1,0 +1,31 @@
+# Core
+pandas>=2.2
+numpy>=1.26
+python-dotenv>=1.0
+
+# Database
+psycopg2-binary>=2.9
+sqlalchemy>=2.0
+sshtunnel>=0.4
+
+# NLP
+transformers>=4.40
+torch>=2.2
+langdetect>=1.0.9
+nltk>=3.9
+
+# Analysis
+scikit-learn>=1.4
+scipy>=1.13
+statsmodels>=0.14
+
+# Visualization & Dashboard
+streamlit>=1.40
+plotly>=5.22
+wordcloud>=1.9
+
+# Cache
+pyarrow>=15.0
+
+# Utilities
+tqdm>=4.66
