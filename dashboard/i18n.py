@@ -104,6 +104,10 @@ TRANSLATIONS = {
     "event_type": {"ru": "Тип события", "en": "Event type"},
     "count": {"ru": "Количество", "en": "Count"},
     "loading_data": {"ru": "Загружаю данные...", "en": "Loading data..."},
+    "loading_data_background": {
+        "ru": "Данные подгружаются в фоне. Дашборд появится через несколько секунд.",
+        "en": "Data is loading in the background. The dashboard will appear in a moment.",
+    },
 
     # === Frequency analysis (page 1) ===
     "freq_title": {

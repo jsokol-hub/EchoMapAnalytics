@@ -1,6 +1,7 @@
 """EchoMap Analytics — main dashboard."""
 
 import sys
+import threading
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -20,6 +21,20 @@ st.markdown("""<style>
 </style>""", unsafe_allow_html=True)
 
 from dashboard.i18n import t, init_language
+
+
+# PRODUCTION: background-loaded df so first HTTP response is fast (avoids proxy/healthcheck killing the container)
+_background_df = None
+_background_load_started = False
+
+
+def _background_load():
+    global _background_df
+    try:
+        df = load_and_preprocess(source="auto", csv_path=None)
+        _background_df = df.copy()
+    except Exception:
+        _background_df = None
 
 
 @st.cache_data(ttl=600)
@@ -52,10 +67,34 @@ def main():
 
     from config import PRODUCTION
 
+    # PRODUCTION: fast first response — show "Loading..." and load data in background so proxy/healthcheck gets 200 quickly
+    if PRODUCTION and "df" not in st.session_state:
+        global _background_df, _background_load_started
+        if _background_df is not None:
+            st.session_state["df"] = _background_df
+            _background_df = None
+            # fall through to render with session_state["df"] below
+        else:
+            if not _background_load_started:
+                _background_load_started = True
+                th = threading.Thread(target=_background_load, daemon=True)
+                th.start()
+            st.info(t("loading_data_background"))
+            @st.fragment(run_every=2)
+            def poll_loaded():
+                if _background_df is not None:
+                    global _background_df
+                    st.session_state["df"] = _background_df
+                    _background_df = None
+                    st.rerun()
+            poll_loaded()
+            return
+
+    # Duplicate import removed; PRODUCTION already imported above
+
     with st.sidebar:
         data_source = "auto"
         csv_path = None
-
         if not PRODUCTION:
             st.header("⚙️")
             from config import SSH_CONFIG
@@ -71,9 +110,12 @@ def main():
                     csv_path = str(tmp)
 
     try:
-        with st.spinner(t("loading_data")):
-            df = load_and_preprocess(source=data_source, csv_path=csv_path)
-        st.session_state["df"] = df
+        if "df" in st.session_state:
+            df = st.session_state["df"]
+        else:
+            with st.spinner(t("loading_data")):
+                df = load_and_preprocess(source=data_source, csv_path=csv_path)
+            st.session_state["df"] = df
 
         with st.sidebar:
             st.divider()
