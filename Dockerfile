@@ -22,8 +22,6 @@ RUN chmod +x /entrypoint.sh
 
 EXPOSE 8501
 
-# Give app time to load cache on first request; then check every 30s with 15s timeout
-HEALTHCHECK --interval=30s --timeout=15s --retries=5 --start-period=90s \
-    CMD curl -f http://localhost:8501/_stcore/health || exit 1
-
+# No HEALTHCHECK — avoids Docker restarting the container when Streamlit is busy on first request.
+# CapRover/nginx may still do a quick connect; we listen on 8501 immediately (preload runs in background).
 ENTRYPOINT ["/entrypoint.sh"]
