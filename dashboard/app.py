@@ -77,8 +77,13 @@ def main():
     st.markdown(t("app_subtitle"))
 
     from config import PRODUCTION
+    from config import CACHE_PATH
 
-    # PRODUCTION: fast first response — show "Loading..." and load data in background so proxy/healthcheck gets 200 quickly
+    # PRODUCTION + cache exists: load synchronously with progress (no background thread — avoids "stuck loading")
+    if PRODUCTION and "df" not in st.session_state and Path(CACHE_PATH).exists():
+        st.session_state["force_sync_load"] = True
+
+    # PRODUCTION: fast first response only when cache is missing (e.g. right after deploy)
     if PRODUCTION and "df" not in st.session_state and not st.session_state.get("force_sync_load"):
         global _background_df, _background_load_started
         if _background_df is not None:
