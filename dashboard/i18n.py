@@ -108,6 +108,11 @@ TRANSLATIONS = {
         "ru": "Данные подгружаются в фоне. Дашборд появится через несколько секунд.",
         "en": "Data is loading in the background. The dashboard will appear in a moment.",
     },
+    "loading_taking_long": {
+        "ru": "Загрузка занимает больше времени, чем обычно. Возможно, кэш ещё не готов или нет доступа к БД.",
+        "en": "Loading is taking longer than usual. The cache may not be ready or the database may be unreachable.",
+    },
+    "load_now_btn": {"ru": "Загрузить на этой странице", "en": "Load on this page"},
     "nav_sections": {"ru": "Разделы", "en": "Sections"},
     "nav_home": {"ru": "Главная", "en": "Home"},
 

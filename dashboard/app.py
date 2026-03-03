@@ -1,6 +1,7 @@
 """EchoMap Analytics — main dashboard."""
 
 import sys
+import time
 import threading
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -10,6 +11,16 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import logging
+
+# Suppress noisy WebSocket closed errors (browser/tab closed or refresh during long ops)
+class _SuppressWebSocketClosed(logging.Filter):
+    def filter(self, record):
+        msg = (record.msg % record.args) if record.args else str(record.msg)
+        if "WebSocketClosedError" in msg or "Task exception was never retrieved" in msg or "Stream is closed" in msg:
+            return False
+        return True
+for _name in ("asyncio", "tornado.general", "tornado.application"):
+    logging.getLogger(_name).addFilter(_SuppressWebSocketClosed())
 
 logging.basicConfig(level=logging.INFO)
 
@@ -68,7 +79,7 @@ def main():
     from config import PRODUCTION
 
     # PRODUCTION: fast first response — show "Loading..." and load data in background so proxy/healthcheck gets 200 quickly
-    if PRODUCTION and "df" not in st.session_state:
+    if PRODUCTION and "df" not in st.session_state and not st.session_state.get("force_sync_load"):
         global _background_df, _background_load_started
         if _background_df is not None:
             st.session_state["df"] = _background_df
@@ -77,16 +88,25 @@ def main():
         else:
             if not _background_load_started:
                 _background_load_started = True
+                st.session_state["_load_started_at"] = time.time()
                 th = threading.Thread(target=_background_load, daemon=True)
                 th.start()
             st.info(t("loading_data_background"))
-            @st.fragment(run_every=2)
+            # Poll every 5s (not 2s) to avoid "constantly loading" feel
+            @st.fragment(run_every=5)
             def poll_loaded():
                 global _background_df
                 if _background_df is not None:
                     st.session_state["df"] = _background_df
                     _background_df = None
                     st.rerun()
+                # After 60s, offer sync load so user isn't stuck
+                started = st.session_state.get("_load_started_at") or time.time()
+                if time.time() - started > 60:
+                    st.warning(t("loading_taking_long"))
+                    if st.button(t("load_now_btn"), type="primary"):
+                        st.session_state["force_sync_load"] = True
+                        st.rerun()
             poll_loaded()
             return
 
@@ -121,6 +141,7 @@ def main():
             pbar.progress(1.0)
             progress_ph.empty()
             st.session_state["df"] = df
+            st.session_state.pop("force_sync_load", None)
 
         with st.sidebar:
             st.divider()
