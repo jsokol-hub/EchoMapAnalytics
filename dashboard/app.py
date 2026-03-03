@@ -82,8 +82,8 @@ def main():
             st.info(t("loading_data_background"))
             @st.fragment(run_every=2)
             def poll_loaded():
+                global _background_df
                 if _background_df is not None:
-                    global _background_df
                     st.session_state["df"] = _background_df
                     _background_df = None
                     st.rerun()
