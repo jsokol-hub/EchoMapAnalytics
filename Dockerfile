@@ -22,19 +22,8 @@ RUN chmod +x /entrypoint.sh
 
 EXPOSE 8501
 
-HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-    CMD curl -f http://localhost:8501/_stcore/health || exit 1
-
-ENTRYPOINT ["/entrypoint.sh"]
-
-RUN mkdir -p data .streamlit
-
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
-EXPOSE 8501
-
-HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+# Give app time to load cache on first request; then check every 30s with 15s timeout
+HEALTHCHECK --interval=30s --timeout=15s --retries=5 --start-period=90s \
     CMD curl -f http://localhost:8501/_stcore/health || exit 1
 
 ENTRYPOINT ["/entrypoint.sh"]

@@ -1,6 +1,7 @@
 [server]
 maxUploadSize = 0
-enableXsrfProtection = true
+# Disable XSRF so CORS can be false behind reverse proxy (CapRover); dashboard is not public edit
+enableXsrfProtection = false
 enableCORS = false
 headless = true
 address = "0.0.0.0"
