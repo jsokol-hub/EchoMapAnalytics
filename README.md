@@ -124,3 +124,46 @@ df -h
 ```
 
 После этого повтори деплой в CapRover. Если места всё равно мало — удали старые образы приложения в CapRover или увеличь диск сервера.
+
+### Контейнер постоянно перезапускается («Stopping» в логах)
+
+Нужно понять, **кто** останавливает контейнер. Подключись по SSH к серверу CapRover и выполни по очереди.
+
+**1. Логи приложения (подставь имя своего приложения):**
+```bash
+# Streamlit-дашборд в CapRover обычно называется echomap-analytics (с суффиксом)
+docker service logs srv-captain--echomap-analytics --since 60m --timestamps
+
+# Если у тебя одно приложение без суффикса — будет srv-captain--echomap и т.п.
+# Узнать все сервисы: docker service ls | grep -i echo
+
+# Следить в реальном времени (запусти и открой дашборд в браузере)
+docker service logs srv-captain--echomap-analytics --timestamps --follow
+```
+
+**2. События Docker (кто и когда убил контейнер):**
+```bash
+# Запусти в одном терминале и оставь работать; в другом сделай деплой или открой дашборд
+docker events --filter 'type=container' --filter 'event=die' --filter 'event=destroy' --since 5m
+```
+В выводе будет видно, какой контейнер завершился и (при OOM) причина.
+
+**3. OOM Killer (закончилась память):**
+```bash
+dmesg -T | grep -i "out of memory\|oom\|killed process"
+# или
+journalctl -k | grep -i oom
+```
+
+**4. Логи preload-кэша внутри контейнера:**
+```bash
+CONTAINER=$(docker ps -q -f name=srv-captain--echomap-analytics)
+docker exec $CONTAINER cat /var/log/preload.log
+```
+
+**5. Логи nginx (если 502 / таймаут со стороны прокси):**
+```bash
+docker service logs captain-nginx --since 30m --timestamps
+```
+
+По результатам: если в `docker events` видно `oom` или в dmesg — контейнер режут по памяти. Если контейнер падает с **exitCode=0** через несколько минут (например, ровно через ~5 минут) — платформа шлёт SIGTERM: чаще всего из‑за **failed health check**. В Dockerfile уже задан HEALTHCHECK по адресу **`/_stcore/health`** (лёгкий endpoint Streamlit), так что проверка не грузит главную страницу. После деплоя контейнер должен оставаться в статусе healthy. В CapRover отдельной настройки пути для health check нет — используется только HEALTHCHECK из Dockerfile.
