@@ -55,14 +55,15 @@ def _get_ner_pipeline():
 def analyze_sentiment_batch(
     texts: list[str],
     batch_size: int = 32,
+    progress_callback=None,
 ) -> list[dict]:
     """
     Analyze sentiment for a batch of texts.
-    Returns list of dicts with 'label' and 'score' keys.
-    Model outputs: positive, negative, neutral.
+    progress_callback(batch_index, total_batches) called each batch if provided.
     """
     pipe = _get_sentiment_pipeline()
     results = []
+    total_batches = (len(texts) + batch_size - 1) // batch_size
 
     for i in tqdm(range(0, len(texts), batch_size), desc="Sentiment"):
         batch = texts[i:i + batch_size]
@@ -93,6 +94,9 @@ def analyze_sentiment_batch(
                 "sentiment_negative": 0,
                 "sentiment_neutral": 0,
             }] * len(batch))
+        if progress_callback:
+            batch_idx = i // batch_size
+            progress_callback(batch_idx + 1, total_batches)
 
     return results
 
@@ -130,11 +134,11 @@ def extract_entities_batch(
     return results
 
 
-def add_sentiment_to_df(df: pd.DataFrame) -> pd.DataFrame:
-    """Add sentiment columns to DataFrame."""
+def add_sentiment_to_df(df: pd.DataFrame, progress_callback=None) -> pd.DataFrame:
+    """Add sentiment columns to DataFrame. progress_callback(batch, total_batches) optional."""
     df = df.copy()
     texts = df["text_clean"].tolist()
-    sentiments = analyze_sentiment_batch(texts)
+    sentiments = analyze_sentiment_batch(texts, progress_callback=progress_callback)
     sentiment_df = pd.DataFrame(sentiments)
     for col in sentiment_df.columns:
         df[col] = sentiment_df[col].values

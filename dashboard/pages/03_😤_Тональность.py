@@ -21,11 +21,18 @@ if df is None:
 if "sentiment_label" not in df.columns:
     st.info(t("sentiment_needed"))
     if st.button(f"🚀 {t('run_sentiment')}", type="primary"):
-        with st.spinner("..."):
+        progress_bar = st.progress(0)
+        status_ph = st.empty()
+        def _progress(batch: int, total: int):
+            progress_bar.progress(batch / total if total else 1.0)
+            status_ph.caption(t("sentiment_progress").format(batch, total))
+        with st.spinner(t("run_sentiment")):
             from src.nlp_analyzer import add_sentiment_to_df
-            df = add_sentiment_to_df(df)
-            st.session_state["df"] = df
-            st.session_state["df_filtered"] = df
+            df = add_sentiment_to_df(df, progress_callback=_progress)
+        progress_bar.empty()
+        status_ph.empty()
+        st.session_state["df"] = df
+        st.session_state["df_filtered"] = df
         st.rerun()
     else:
         st.stop()

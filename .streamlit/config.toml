@@ -12,3 +12,7 @@ gatherUsageStats = false
 
 [theme]
 base = "dark"
+
+# Hide default sidebar page list so we show translated nav in i18n.render_sidebar_nav()
+[client]
+showSidebarNavigation = false

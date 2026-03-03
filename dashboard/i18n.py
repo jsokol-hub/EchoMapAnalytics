@@ -108,6 +108,8 @@ TRANSLATIONS = {
         "ru": "Данные подгружаются в фоне. Дашборд появится через несколько секунд.",
         "en": "Data is loading in the background. The dashboard will appear in a moment.",
     },
+    "nav_sections": {"ru": "Разделы", "en": "Sections"},
+    "nav_home": {"ru": "Главная", "en": "Home"},
 
     # === Frequency analysis (page 1) ===
     "freq_title": {
@@ -247,6 +249,7 @@ TRANSLATIONS = {
         "en": "Sentiment analysis requires a neural network model. On first run it will download (~500 MB), and analyzing 30,000 messages takes about 1-1.5 hours on a regular computer.",
     },
     "run_sentiment": {"ru": "Запустить анализ тональности", "en": "Run sentiment analysis"},
+    "sentiment_progress": {"ru": "Анализ тональности: батч {} из {}", "en": "Sentiment analysis: batch {} of {}"},
     "overall_picture": {"ru": "Общая картина", "en": "Overall picture"},
     "overall_desc": {
         "ru": "Какая доля сообщений негативная, нейтральная или позитивная.",
@@ -453,8 +456,22 @@ def t(key: str) -> str:
     return entry.get(lang, entry.get("en", key))
 
 
+def render_sidebar_nav():
+    """Render sidebar navigation with translated page names (used when client.showSidebarNavigation = false)."""
+    st.subheader(t("nav_sections"))
+    try:
+        st.page_link("app.py", label=t("nav_home"), icon="🌍")
+        st.page_link("pages/01_📊_Частотный_анализ.py", label=t("freq_title"), icon="📊")
+        st.page_link("pages/02_🗺️_Геоаналитика.py", label=t("geo_title"), icon="🗺️")
+        st.page_link("pages/03_😤_Тональность.py", label=t("sentiment_title"), icon="😤")
+        st.page_link("pages/04_⚠️_Сигналы_эскалации.py", label=t("signals_title"), icon="⚠️")
+        st.page_link("pages/05_🔮_Прогнозирование.py", label=t("predict_title"), icon="🔮")
+    except Exception:
+        st.caption("Use the sidebar pages below.")
+
+
 def init_language():
-    """Initialize language selector in sidebar. Call once from app.py."""
+    """Initialize language selector and nav in sidebar. Call once from each page."""
     if "lang" not in st.session_state:
         st.session_state["lang"] = "en"
 
@@ -469,6 +486,8 @@ def init_language():
         if lang != st.session_state["lang"]:
             st.session_state["lang"] = lang
             st.rerun()
+        st.divider()
+        render_sidebar_nav()
 
 
 FREQ_LABELS = {

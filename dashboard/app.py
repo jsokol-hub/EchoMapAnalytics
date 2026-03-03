@@ -113,8 +113,13 @@ def main():
         if "df" in st.session_state:
             df = st.session_state["df"]
         else:
-            with st.spinner(t("loading_data")):
-                df = load_and_preprocess(source=data_source, csv_path=csv_path)
+            progress_ph = st.empty()
+            with progress_ph.container():
+                st.caption(t("loading_data"))
+                pbar = st.progress(0)
+            df = load_and_preprocess(source=data_source, csv_path=csv_path)
+            pbar.progress(1.0)
+            progress_ph.empty()
             st.session_state["df"] = df
 
         with st.sidebar:
