@@ -186,6 +186,29 @@ def load_from_cache() -> pd.DataFrame:
     return df
 
 
+def merge_sentiment_cache(df: pd.DataFrame) -> pd.DataFrame:
+    """If sentiment_cache.parquet exists, merge its columns into df (by date + text_clean). Returns df with sentiment columns where cache matched."""
+    from config import SENTIMENT_CACHE_PATH
+    path = Path(SENTIMENT_CACHE_PATH)
+    if not path.exists():
+        return df
+    try:
+        sc = pd.read_parquet(path, engine="pyarrow")
+        if "date" in sc.columns:
+            sc["date"] = pd.to_datetime(sc["date"], errors="coerce", utc=True)
+        sentiment_cols = [c for c in ("sentiment_label", "sentiment_positive", "sentiment_negative", "sentiment_neutral", "sentiment_score") if c in sc.columns]
+        if not sentiment_cols or "date" not in sc.columns or "text_clean" not in sc.columns:
+            return df
+        sc = sc[["date", "text_clean"] + sentiment_cols].drop_duplicates(subset=["date", "text_clean"])
+        df = df.drop(columns=[c for c in sentiment_cols if c in df.columns], errors="ignore")
+        df = df.merge(sc, on=["date", "text_clean"], how="left")
+        n = df["sentiment_label"].notna().sum() if "sentiment_label" in df.columns else 0
+        logger.info(f"Merged sentiment cache: {n} rows have cached sentiment")
+    except Exception as e:
+        logger.warning(f"Could not merge sentiment cache: {e}")
+    return df
+
+
 def load_data(source: str = "auto", **kwargs) -> pd.DataFrame:
     """
     Universal data loader. Priority: cache > postgres > csv.

@@ -142,7 +142,20 @@ def add_sentiment_to_df(df: pd.DataFrame, progress_callback=None) -> pd.DataFram
     sentiment_df = pd.DataFrame(sentiments)
     for col in sentiment_df.columns:
         df[col] = sentiment_df[col].values
+    save_sentiment_cache(df)
     return df
+
+
+def save_sentiment_cache(df: pd.DataFrame) -> None:
+    """Persist sentiment columns to disk so they are reused after cache refresh."""
+    from config import SENTIMENT_CACHE_PATH
+    cols = ["date", "text_clean", "sentiment_label", "sentiment_positive", "sentiment_negative", "sentiment_neutral", "sentiment_score"]
+    if not all(c in df.columns for c in cols):
+        return
+    path = Path(SENTIMENT_CACHE_PATH)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    df[cols].to_parquet(path, index=False, engine="pyarrow")
+    logger.info(f"Saved sentiment cache to {path} ({len(df)} rows)")
 
 
 def add_entities_to_df(df: pd.DataFrame) -> pd.DataFrame:

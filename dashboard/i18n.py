@@ -255,6 +255,10 @@ TRANSLATIONS = {
     },
     "run_sentiment": {"ru": "Запустить анализ тональности", "en": "Run sentiment analysis"},
     "sentiment_progress": {"ru": "Анализ тональности: батч {} из {}", "en": "Sentiment analysis: batch {} of {}"},
+    "sentiment_from_cache": {
+        "ru": "Результаты тональности сохранены на сервере и подгружаются при обновлении данных.",
+        "en": "Sentiment results are saved on the server and load automatically when data is refreshed.",
+    },
     "overall_picture": {"ru": "Общая картина", "en": "Overall picture"},
     "overall_desc": {
         "ru": "Какая доля сообщений негативная, нейтральная или позитивная.",

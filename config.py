@@ -34,6 +34,8 @@ PG_CONFIG = {
 
 CSV_DATA_PATH = os.getenv("CSV_DATA_PATH", str(DATA_DIR / "messages.csv"))
 CACHE_PATH = str(CACHE_DIR / "cache.parquet")
+# Persisted sentiment results (so ML model is run once on server)
+SENTIMENT_CACHE_PATH = str(CACHE_DIR / "sentiment_cache.parquet")
 
 if PRODUCTION and not PG_CONFIG["password"]:
     logger.warning("PRODUCTION mode but PG_PASSWORD is not set!")

@@ -36,6 +36,8 @@ if "sentiment_label" not in df.columns:
         st.rerun()
     else:
         st.stop()
+else:
+    st.caption(t("sentiment_from_cache"))
 
 with st.sidebar:
     fm = {"1h": t("hourly"), "3h": t("3h"), "D": t("daily")}

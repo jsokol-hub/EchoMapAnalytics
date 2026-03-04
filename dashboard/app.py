@@ -50,7 +50,7 @@ def _background_load():
 
 @st.cache_data(ttl=600)
 def load_and_preprocess(source="auto", csv_path=None):
-    from src.data_loader import load_data, load_from_cache
+    from src.data_loader import load_data, load_from_cache, merge_sentiment_cache
     from src.preprocessor import preprocess_dataframe
     from src.geo_analyzer import add_region_column
     from config import CACHE_PATH
@@ -59,15 +59,17 @@ def load_and_preprocess(source="auto", csv_path=None):
         df = load_data(source="csv", path=csv_path)
         df = preprocess_dataframe(df)
         df = add_region_column(df)
-        return df
+        return merge_sentiment_cache(df)
 
     if source == "auto" and Path(CACHE_PATH).exists():
-        return load_from_cache()
+        df = load_from_cache()
+        df = merge_sentiment_cache(df)
+        return df
 
     df = load_data(source=source)
     df = preprocess_dataframe(df)
     df = add_region_column(df)
-    return df
+    return merge_sentiment_cache(df)
 
 
 def main():
