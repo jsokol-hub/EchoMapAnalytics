@@ -494,12 +494,12 @@ def render_sidebar_nav():
     """Render sidebar navigation with translated page names (used when client.showSidebarNavigation = false)."""
     st.subheader(t("nav_sections"))
     try:
-        st.page_link("app.py", label=t("nav_home"), icon="")
-        st.page_link("pages/01_Frequency_Analysis.py", label=t("freq_title"), icon="")
-        st.page_link("pages/02_Geo_Analytics.py", label=t("geo_title"), icon="")
-        st.page_link("pages/03_Sentiment.py", label=t("sentiment_title"), icon="")
-        st.page_link("pages/04_Escalation_Signals.py", label=t("signals_title"), icon="")
-        st.page_link("pages/05_Forecasting.py", label=t("predict_title"), icon="")
+        st.page_link("app.py", label=t("nav_home"))
+        st.page_link("pages/01_Frequency_Analysis.py", label=t("freq_title"))
+        st.page_link("pages/02_Geo_Analytics.py", label=t("geo_title"))
+        st.page_link("pages/03_Sentiment.py", label=t("sentiment_title"))
+        st.page_link("pages/04_Escalation_Signals.py", label=t("signals_title"))
+        st.page_link("pages/05_Forecasting.py", label=t("predict_title"))
     except Exception:
         st.caption("Use the sidebar pages below.")
 
