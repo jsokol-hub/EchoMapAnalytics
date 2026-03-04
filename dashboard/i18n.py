@@ -366,9 +366,11 @@ TRANSLATIONS = {
     # === Prediction (page 5) ===
     "predict_title": {"ru": "Прогнозирование", "en": "Forecasting"},
     "predict_desc": {
-        "ru": "Подготовка признаков, обучение модели эскалации и важность факторов. В конце — ориентировочная оценка снижения напряжённости по тренду индекса.",
-        "en": "Feature preparation, escalation model training, and factor importance. At the end — a rough estimate of when tension might decrease based on index trend.",
+        "ru": "Вероятность эскалации по времени и ориентировочная дата снижения напряжённости по тренду индекса.",
+        "en": "Escalation probability over time and an approximate date for tension to decrease based on the index trend.",
     },
+    "forecast_results_title": {"ru": "Результаты прогноза", "en": "Forecast results"},
+    "methodology_expander": {"ru": "Как построен прогноз", "en": "How is this forecast built?"},
     "model_params": {"ru": "Параметры модели", "en": "Model parameters"},
     "observation_window": {"ru": "Окно наблюдения (дни)", "en": "Observation window (days)"},
     "forecast_horizon": {"ru": "Горизонт прогноза (дни)", "en": "Forecast horizon (days)"},

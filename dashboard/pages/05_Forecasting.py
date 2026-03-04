@@ -23,7 +23,8 @@ st.markdown(t("predict_desc"))
 
 df = st.session_state.get("df_filtered", st.session_state.get("df"))
 if df is None:
-    st.warning(t("load_data_main_first")); st.stop()
+    st.warning(t("load_data_main_first"))
+    st.stop()
 
 with st.sidebar:
     st.markdown(f"### {t('model_params')}")
@@ -36,9 +37,6 @@ keyword_ts = build_keyword_timeseries(df, IRAN_KEYWORDS, freq="D")
 category_ts = build_category_timeseries(df, ESCALATION_CATEGORIES, freq="D")
 sentiment_ts = st.session_state.get("sentiment_ts")
 signals = build_composite_signal(keyword_ts, category_ts, sentiment_ts)
-
-st.subheader(t("step1"))
-st.markdown(t("step1_desc").format(lookback, escalation_threshold, forecast_horizon))
 
 
 def build_features(sdf, lb):
@@ -62,89 +60,48 @@ target = (signals["composite_escalation_index"].shift(-forecast_horizon)
 valid = target.notna()
 X, y = features[valid], target[valid].astype(int)
 
-c1, c2 = st.columns(2)
-with c1: st.metric(t("features"), X.shape[1])
-with c2: st.metric(t("training_days"), X.shape[0])
-
 pct = y.mean() * 100
-if pct > 0:
-    st.info(t("escalation_days_info").format(int(y.sum()), f"{pct:.1f}"))
-else:
-    st.warning("No escalation periods with current settings."); st.stop()
+if pct <= 0:
+    st.warning("No escalation periods with current settings.")
+    st.stop()
 if len(X) < 30:
-    st.warning("Not enough data (need at least 30 days)."); st.stop()
+    st.warning("Not enough data (need at least 30 days).")
+    st.stop()
 
-st.subheader(t("step2"))
-st.markdown(t("step2_desc"))
-
+# Cross-validation and final model (no UI here)
 n_splits = min(5, max(2, len(X) // 20))
 tscv = TimeSeriesSplit(n_splits=n_splits)
 fold_scores = []
-
 for _, (train_idx, test_idx) in enumerate(tscv.split(X)):
     Xtr, Xte = X.iloc[train_idx], X.iloc[test_idx]
     ytr, yte = y.iloc[train_idx], y.iloc[test_idx]
-    if len(set(ytr)) < 2: continue
+    if len(set(ytr)) < 2:
+        continue
     m = GradientBoostingClassifier(n_estimators=100, max_depth=3, learning_rate=0.1, random_state=42)
     m.fit(Xtr, ytr)
     if len(set(yte)) > 1:
         fold_scores.append(roc_auc_score(yte, m.predict_proba(Xte)[:, 1] if len(m.classes_) > 1 else np.zeros(len(Xte))))
 
-if fold_scores:
-    avg = np.mean(fold_scores)
-    if avg >= 0.8: st.success(t("auc_good").format(avg))
-    elif avg >= 0.6: st.info(t("auc_ok").format(avg))
-    else: st.warning(t("auc_weak").format(avg))
-
-st.subheader(t("step3"))
-st.markdown(t("step3_desc"))
-
 final = GradientBoostingClassifier(n_estimators=100, max_depth=3, learning_rate=0.1, random_state=42)
 final.fit(X, y)
-
-imp = pd.Series(final.feature_importances_, index=X.columns).nlargest(15)
-
-fn = {"composite_escalation_index": t("feat_composite"), "keyword_frequency": t("feat_kw_freq"),
-      "keyword_acceleration": t("feat_kw_accel"), "sentiment_negativity": t("feat_sentiment"),
-      "category_military_action": t("feat_military"), "category_casualties_damage": t("feat_casualties"),
-      "category_diplomatic_political": t("feat_diplomatic"), "category_missile_defense": t("feat_missiles"),
-      "category_regional_escalation": t("feat_regional")}
-sn = {"mean": t("feat_mean"), "max": t("feat_max"), "std": t("feat_std"), "trend": t("feat_trend"), "accel": t("feat_accel")}
-
-def _tr(name):
-    for k, v in fn.items():
-        if k in name:
-            sfx = name.replace(k + "_", "")
-            for se, sr in sn.items():
-                sfx = sfx.replace(se, sr)
-            return f"{v} ({sfx})"
-    return name
-
-fig_imp = px.bar(x=imp.values, y=[_tr(f) for f in imp.index], orientation="h",
-    color=imp.values, color_continuous_scale="YlOrRd", labels={"x": t("importance"), "y": ""})
-fig_imp.update_layout(template="plotly_dark", height=450, yaxis=dict(autorange="reversed"),
-    coloraxis_showscale=False, margin=dict(l=0, r=0, t=10, b=0))
-st.plotly_chart(fig_imp, use_container_width=True)
-
-st.subheader(t("step4"))
-st.markdown(t("step4_desc").format(forecast_horizon))
-
 proba = pd.Series(final.predict_proba(X)[:, 1] if len(final.classes_) > 1 else np.zeros(len(X)), index=X.index)
+
+# --- Results first ---
+st.subheader(t("forecast_results_title"))
+st.markdown(t("step4_desc").format(forecast_horizon))
 
 fig_p = go.Figure()
 fig_p.add_trace(go.Scatter(x=proba.index, y=proba.values, mode="lines", name=t("escalation_probability"),
     line=dict(color="#ff4757", width=2), fill="tozeroy", fillcolor="rgba(255,71,87,0.15)"))
 fig_p.add_hline(y=0.5, line_dash="dash", line_color="#ffa502", annotation_text="50%")
-
 evt = str(event_date)
 fig_p.add_shape(type="line", x0=evt, x1=evt, y0=0, y1=1, line=dict(color="#ff4444", width=2, dash="dash"))
 fig_p.add_annotation(x=evt, y=0.95, text=t("event"), showarrow=False, font=dict(color="#ff4444", size=12))
-
 fig_p.update_layout(template="plotly_dark", height=400, yaxis=dict(title=t("escalation_probability"), range=[0, 1], tickformat=".0%"),
     legend=dict(orientation="h", y=1.12), margin=dict(l=0, r=0, t=30, b=0))
 st.plotly_chart(fig_p, use_container_width=True)
 
-# Section: when might it end (extrapolation of escalation index trend)
+# When might it end
 st.subheader(t("war_end_title"))
 st.markdown(t("war_end_desc"))
 
@@ -172,5 +129,48 @@ else:
     st.caption("Not enough data for trend extrapolation.")
 st.caption(t("war_end_disclaimer"))
 
-st.subheader(t("conclusions"))
-st.markdown(t("conclusions_text").format(lookback, forecast_horizon, escalation_threshold))
+# Methodology in expander
+with st.expander(t("methodology_expander")):
+    st.markdown(t("step1_desc").format(lookback, escalation_threshold, forecast_horizon))
+    c1, c2 = st.columns(2)
+    with c1:
+        st.metric(t("features"), X.shape[1])
+    with c2:
+        st.metric(t("training_days"), X.shape[0])
+    st.info(t("escalation_days_info").format(int(y.sum()), f"{pct:.1f}"))
+
+    st.markdown(t("step2_desc"))
+    if fold_scores:
+        avg = np.mean(fold_scores)
+        if avg >= 0.8:
+            st.success(t("auc_good").format(avg))
+        elif avg >= 0.6:
+            st.info(t("auc_ok").format(avg))
+        else:
+            st.warning(t("auc_weak").format(avg))
+
+    st.markdown(t("step3_desc"))
+    imp = pd.Series(final.feature_importances_, index=X.columns).nlargest(15)
+    fn = {"composite_escalation_index": t("feat_composite"), "keyword_frequency": t("feat_kw_freq"),
+          "keyword_acceleration": t("feat_kw_accel"), "sentiment_negativity": t("feat_sentiment"),
+          "category_military_action": t("feat_military"), "category_casualties_damage": t("feat_casualties"),
+          "category_diplomatic_political": t("feat_diplomatic"), "category_missile_defense": t("feat_missiles"),
+          "category_regional_escalation": t("feat_regional")}
+    sn = {"mean": t("feat_mean"), "max": t("feat_max"), "std": t("feat_std"), "trend": t("feat_trend"), "accel": t("feat_accel")}
+
+    def _tr(name):
+        for k, v in fn.items():
+            if k in name:
+                sfx = name.replace(k + "_", "")
+                for se, sr in sn.items():
+                    sfx = sfx.replace(se, sr)
+                return f"{v} ({sfx})"
+        return name
+
+    fig_imp = px.bar(x=imp.values, y=[_tr(f) for f in imp.index], orientation="h",
+        color=imp.values, color_continuous_scale="YlOrRd", labels={"x": t("importance"), "y": ""})
+    fig_imp.update_layout(template="plotly_dark", height=450, yaxis=dict(autorange="reversed"),
+        coloraxis_showscale=False, margin=dict(l=0, r=0, t=10, b=0))
+    st.plotly_chart(fig_imp, use_container_width=True)
+
+    st.markdown(t("conclusions_text").format(lookback, forecast_horizon, escalation_threshold))
