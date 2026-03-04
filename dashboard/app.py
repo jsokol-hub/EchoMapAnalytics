@@ -24,7 +24,7 @@ for _name in ("asyncio", "tornado.general", "tornado.application"):
 
 logging.basicConfig(level=logging.INFO)
 
-st.set_page_config(page_title="EchoMap Analytics", page_icon="🌍", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="EchoMap Analytics", layout="wide", initial_sidebar_state="expanded")
 
 st.markdown("""<style>
     .block-container { padding-top: 1rem; }
@@ -75,7 +75,7 @@ def load_and_preprocess(source="auto", csv_path=None):
 def main():
     init_language()
 
-    st.title(f"🌍 {t('app_title')}")
+    st.title(t("app_title"))
     st.markdown(t("app_subtitle"))
 
     from config import PRODUCTION
@@ -123,7 +123,7 @@ def main():
         data_source = "auto"
         csv_path = None
         if not PRODUCTION:
-            st.header("⚙️")
+            st.header("Settings")
             from config import SSH_CONFIG
             default_source = "postgres" if SSH_CONFIG["enabled"] else "auto"
             data_source = st.radio("Source", ["postgres", "csv", "auto"],
@@ -152,7 +152,7 @@ def main():
 
         with st.sidebar:
             st.divider()
-            st.header(f"🔍 {t('filters')}")
+            st.header(t("filters"))
 
             if "date" in df.columns:
                 date_range = st.date_input(t("date_range"),
@@ -189,20 +189,20 @@ def main():
 
 def _show_overview(df):
     c1, c2, c3, c4, c5 = st.columns(5)
-    with c1: st.metric(f"📨 {t('messages_count')}", f"{len(df):,}")
+    with c1: st.metric(t("messages_count"), f"{len(df):,}")
     with c2:
         if "date" in df.columns:
             days = max((df["date"].max() - df["date"].min()).days, 1)
-            st.metric(f"📅 {t('days_in_sample')}", days)
+            st.metric(t("days_in_sample"), days)
     with c3:
-        if "channel" in df.columns: st.metric(f"📡 {t('channels_count')}", df["channel"].nunique())
+        if "channel" in df.columns: st.metric(t("channels_count"), df["channel"].nunique())
     with c4:
-        if "location" in df.columns: st.metric(f"📍 {t('locations_count')}", df["location"].nunique())
+        if "location" in df.columns: st.metric(t("locations_count"), df["location"].nunique())
     with c5:
-        if "category" in df.columns: st.metric(f"🏷️ {t('categories_count')}", df["category"].nunique())
+        if "category" in df.columns: st.metric(t("categories_count"), df["category"].nunique())
 
     st.divider()
-    tab1, tab2, tab3 = st.tabs([f"📈 {t('tab_dynamics')}", f"🗺️ {t('tab_map')}", f"📋 {t('tab_data')}"])
+    tab1, tab2, tab3 = st.tabs([t("tab_dynamics"), t("tab_map"), t("tab_data")])
 
     with tab1:
         st.markdown(t("dynamics_desc"))
@@ -249,7 +249,7 @@ def _show_overview(df):
         st.dataframe(df[display_cols].tail(50), use_container_width=True, height=500)
 
     st.divider()
-    st.markdown(f"👈 {t('go_to_pages')}")
+    st.markdown(t("go_to_pages"))
 
 
 if __name__ == "__main__":

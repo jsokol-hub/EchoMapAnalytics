@@ -11,16 +11,16 @@ from dashboard.i18n import t, init_language
 
 st.set_page_config(page_title="Sentiment", layout="wide")
 init_language()
-st.title(f"😤 {t('sentiment_title')}")
+st.title(t("sentiment_title"))
 st.markdown(t("sentiment_desc"))
 
 df = st.session_state.get("df_filtered", st.session_state.get("df"))
 if df is None:
-    st.warning("Load data first."); st.stop()
+    st.warning(t("load_data_main_first")); st.stop()
 
 if "sentiment_label" not in df.columns:
     st.info(t("sentiment_needed"))
-    if st.button(f"🚀 {t('run_sentiment')}", type="primary"):
+    if st.button(t("run_sentiment"), type="primary"):
         progress_bar = st.progress(0)
         status_ph = st.empty()
         def _progress(batch: int, total: int):
@@ -65,7 +65,7 @@ with c2:
         fig_b.update_layout(template="plotly_dark", height=300, margin=dict(l=0, r=0, t=10, b=0))
         st.plotly_chart(fig_b, use_container_width=True)
 
-st.subheader(f"📉 {t('negativity_timeline')}")
+st.subheader(t("negativity_timeline"))
 st.markdown(t("negativity_desc"))
 
 if "date" in df.columns:
@@ -84,7 +84,7 @@ if "date" in df.columns:
         legend=dict(orientation="h", y=1.12), margin=dict(l=0, r=0, t=30, b=0))
     st.plotly_chart(fig_n, use_container_width=True)
 
-st.subheader(f"🔥 {t('most_alarming')}")
+st.subheader(t("most_alarming"))
 st.markdown(t("most_alarming_desc"))
 dc = [c for c in ["date", "text_clean", "sentiment_negative", "category", "location"] if c in df.columns]
 top_neg = df.nlargest(20, "sentiment_negative")[dc]

@@ -17,12 +17,12 @@ from config import IRAN_KEYWORDS, ESCALATION_CATEGORIES
 
 st.set_page_config(page_title="Signals", layout="wide")
 init_language()
-st.title(f"⚠️ {t('signals_title')}")
+st.title(t("signals_title"))
 st.markdown(t("signals_desc"))
 
 df = st.session_state.get("df_filtered", st.session_state.get("df"))
 if df is None:
-    st.warning("Load data first."); st.stop()
+    st.warning(t("load_data_main_first")); st.stop()
 
 with st.sidebar:
     event_date = st.date_input(t("event_date"), value=pd.Timestamp("2026-02-28").date())
@@ -53,7 +53,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-st.subheader(f"📈 {t('index_timeline')}")
+st.subheader(t("index_timeline"))
 st.markdown(t("index_timeline_desc"))
 
 fig = go.Figure()
@@ -76,7 +76,7 @@ fig.update_layout(template="plotly_dark", height=500, yaxis=dict(title=t("tensio
     legend=dict(orientation="h", y=1.12), margin=dict(l=0, r=0, t=30, b=0))
 st.plotly_chart(fig, use_container_width=True)
 
-st.subheader(f"🔍 {t('signal_breakdown')}")
+st.subheader(t("signal_breakdown"))
 st.markdown(t("signal_breakdown_desc"))
 
 sig_cols = [c for c in signals.columns if c not in ("composite_escalation_index", "composite_smoothed")]
@@ -95,7 +95,7 @@ for i, col in enumerate(sig_cols):
 fig_bd.update_layout(template="plotly_dark", height=400, legend=dict(orientation="h", y=1.2), margin=dict(l=0, r=0, t=30, b=0))
 st.plotly_chart(fig_bd, use_container_width=True)
 
-st.subheader(f"📋 {t('retrospective')}")
+st.subheader(t("retrospective"))
 st.markdown(t("retrospective_desc"))
 
 report = generate_retrospective_report(signals, event_date=str(event_date))
@@ -109,7 +109,7 @@ if "error" not in report:
         st.metric(t("avg_month_before"), f"{ei['last_30d_avg']:.3f}")
         st.metric(t("peak_month"), f"{ei['max_last_30d']:.3f}")
     with c3:
-        tr = {"rising": f"📈 {t('trend_rising')}", "falling": f"📉 {t('trend_falling')}", "mixed": f"↕️ {t('trend_mixed')}"}
+        tr = {"rising": t("trend_rising"), "falling": t("trend_falling"), "mixed": t("trend_mixed")}
         st.metric(t("trend_week"), tr.get(ei["last_7d_trend"], ei["last_7d_trend"]))
 
     if report.get("signal_breakdown"):
@@ -121,7 +121,7 @@ if "error" not in report:
         ])
         st.dataframe(cd.style.background_gradient(cmap="YlOrRd", subset=[t("contribution")]), use_container_width=True)
 
-    st.subheader(f"⏱️ {t('lead_time_title')}")
+    st.subheader(t("lead_time_title"))
     st.markdown(t("lead_time_desc"))
     for th in [0.3, 0.5, 0.7]:
         lt = estimate_lead_time(signals, event_date=str(event_date), threshold=th)

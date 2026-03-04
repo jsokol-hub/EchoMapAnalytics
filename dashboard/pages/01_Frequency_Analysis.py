@@ -16,12 +16,12 @@ from config import IRAN_KEYWORDS, ESCALATION_CATEGORIES
 
 st.set_page_config(page_title="Frequency", layout="wide")
 init_language()
-st.title(f"📊 {t('freq_title')}")
+st.title(t("freq_title"))
 st.markdown(t("freq_desc"))
 
 df = st.session_state.get("df_filtered", st.session_state.get("df"))
 if df is None:
-    st.warning("Load data on the main page first." if t("freq_title").startswith("How") else "Сначала загрузите данные на главной странице.")
+    st.warning(t("load_data_main_first"))
     st.stop()
 
 with st.sidebar:
@@ -30,7 +30,7 @@ with st.sidebar:
     anomaly_sigma = st.slider(t("sensitivity"), 1.5, 4.0, 2.5, 0.5)
     anomaly_window = st.slider(t("comparison_period"), 5, 30, 14)
 
-st.subheader(f"🔎 {t('keyword_mentions')}")
+st.subheader(t("keyword_mentions"))
 st.markdown(t("keyword_chart_desc"))
 
 keyword_ts = build_keyword_timeseries(df, IRAN_KEYWORDS, freq=freq)
@@ -51,7 +51,7 @@ with c1: st.metric(t("total_matches_found"), f"{int(keyword_ts['keyword_hits'].s
 with c2: st.metric(t("relevant_share"), f"{keyword_ts['keyword_ratio'].mean():.1%}")
 
 if len(keyword_ts) > anomaly_window:
-    st.subheader(f"🔴 {t('unusual_spikes')}")
+    st.subheader(t("unusual_spikes"))
     st.markdown(t("spikes_desc"))
     anomalies = detect_anomalies(keyword_ts["keyword_hits"], window=anomaly_window, threshold_sigma=anomaly_sigma)
 
@@ -70,7 +70,7 @@ if len(keyword_ts) > anomaly_window:
     if n > 0: st.success(t("spikes_found").format(n))
     else: st.info(t("no_spikes"))
 
-st.subheader(f"📁 {t('escalation_topics')}")
+st.subheader(t("escalation_topics"))
 st.markdown(t("escalation_topics_desc"))
 
 category_ts = build_category_timeseries(df, ESCALATION_CATEGORIES, freq=freq)
@@ -88,7 +88,7 @@ fig_c.update_layout(template="plotly_dark", height=400, yaxis_title=t("messages"
 st.plotly_chart(fig_c, use_container_width=True)
 
 if "category" in df.columns:
-    st.subheader(f"📊 {t('event_stats')}")
+    st.subheader(t("event_stats"))
     st.markdown(t("event_stats_desc"))
     from config import CATEGORY_LABELS
     cc = df["category"].value_counts()
@@ -99,7 +99,7 @@ if "category" in df.columns:
     st.plotly_chart(fig_n, use_container_width=True)
 
 if len(category_ts) > 5:
-    st.subheader(f"🔺 {t('crescendo')}")
+    st.subheader(t("crescendo"))
     st.markdown(t("crescendo_desc"))
     crescendo = find_crescendo_patterns(category_ts)
     fig_cr = go.Figure()

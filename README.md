@@ -52,23 +52,23 @@ python scripts/run_analysis.py
 
 ```
 EchoMapAnalytics/
-├── config.py                     # Конфигурация, ключевые слова, модели
+├── config.py                     # Config, keywords, models
 ├── requirements.txt
 ├── .env.example
 ├── src/
-│   ├── data_loader.py            # Загрузка из PostgreSQL / CSV
-│   ├── preprocessor.py           # Очистка текста, определение языка
-│   ├── frequency_analyzer.py     # Частотный анализ, аномалии, крещендо
+│   ├── data_loader.py            # Load from PostgreSQL / CSV
+│   ├── preprocessor.py           # Text cleaning, language detection
+│   ├── frequency_analyzer.py     # Frequency analysis, anomalies, crescendo
 │   ├── nlp_analyzer.py           # Sentiment, NER (transformers)
-│   └── signal_scorer.py          # Композитный индекс, прогнозирование
+│   └── signal_scorer.py          # Composite index, forecasting
 ├── dashboard/
-│   ├── app.py                    # Главная страница Streamlit
+│   ├── app.py                    # Main Streamlit page
 │   └── pages/
-│       ├── 01_Частотный_анализ    # Графики частот и аномалий
-│       ├── 02_Тональность        # Sentiment-анализ
-│       ├── 03_Сущности           # NER-анализ
-│       ├── 04_Сигналы_эскалации  # Композитный индекс
-│       └── 05_Прогнозирование    # ML-модель
+│       ├── 01_Frequency_Analysis.py   # Keyword/category time series, anomalies
+│       ├── 02_Geo_Analytics.py        # Map, top locations, regional activity
+│       ├── 03_Sentiment.py            # Sentiment analysis
+│       ├── 04_Escalation_Signals.py   # Composite escalation index
+│       └── 05_Forecasting.py         # ML model, war-end extrapolation
 ├── scripts/
 │   ├── export_from_pg.py         # Экспорт из PostgreSQL
 │   └── run_analysis.py           # Полный пайплайн

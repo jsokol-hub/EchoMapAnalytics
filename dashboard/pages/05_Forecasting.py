@@ -18,12 +18,12 @@ from config import IRAN_KEYWORDS, ESCALATION_CATEGORIES
 
 st.set_page_config(page_title="Prediction", layout="wide")
 init_language()
-st.title(f"🔮 {t('predict_title')}")
+st.title(t("predict_title"))
 st.markdown(t("predict_desc"))
 
 df = st.session_state.get("df_filtered", st.session_state.get("df"))
 if df is None:
-    st.warning("Load data first."); st.stop()
+    st.warning(t("load_data_main_first")); st.stop()
 
 with st.sidebar:
     st.markdown(f"### {t('model_params')}")
@@ -37,7 +37,7 @@ category_ts = build_category_timeseries(df, ESCALATION_CATEGORIES, freq="D")
 sentiment_ts = st.session_state.get("sentiment_ts")
 signals = build_composite_signal(keyword_ts, category_ts, sentiment_ts)
 
-st.subheader(f"🔧 {t('step1')}")
+st.subheader(t("step1"))
 st.markdown(t("step1_desc").format(lookback, escalation_threshold, forecast_horizon))
 
 
@@ -74,7 +74,7 @@ else:
 if len(X) < 30:
     st.warning("Not enough data (need at least 30 days)."); st.stop()
 
-st.subheader(f"🤖 {t('step2')}")
+st.subheader(t("step2"))
 st.markdown(t("step2_desc"))
 
 n_splits = min(5, max(2, len(X) // 20))
@@ -96,7 +96,7 @@ if fold_scores:
     elif avg >= 0.6: st.info(t("auc_ok").format(avg))
     else: st.warning(t("auc_weak").format(avg))
 
-st.subheader(f"📊 {t('step3')}")
+st.subheader(t("step3"))
 st.markdown(t("step3_desc"))
 
 final = GradientBoostingClassifier(n_estimators=100, max_depth=3, learning_rate=0.1, random_state=42)
@@ -126,7 +126,7 @@ fig_imp.update_layout(template="plotly_dark", height=450, yaxis=dict(autorange="
     coloraxis_showscale=False, margin=dict(l=0, r=0, t=10, b=0))
 st.plotly_chart(fig_imp, use_container_width=True)
 
-st.subheader(f"📈 {t('step4')}")
+st.subheader(t("step4"))
 st.markdown(t("step4_desc").format(forecast_horizon))
 
 proba = pd.Series(final.predict_proba(X)[:, 1] if len(final.classes_) > 1 else np.zeros(len(X)), index=X.index)
@@ -144,5 +144,33 @@ fig_p.update_layout(template="plotly_dark", height=400, yaxis=dict(title=t("esca
     legend=dict(orientation="h", y=1.12), margin=dict(l=0, r=0, t=30, b=0))
 st.plotly_chart(fig_p, use_container_width=True)
 
-st.subheader(f"📝 {t('conclusions')}")
+# Section: when might it end (extrapolation of escalation index trend)
+st.subheader(t("war_end_title"))
+st.markdown(t("war_end_desc"))
+
+calm_threshold = 0.3
+s = signals["composite_smoothed"].dropna()
+if len(s) >= 14:
+    last_n = min(60, len(s))
+    y_vals = s.iloc[-last_n:].values.astype(float)
+    x_vals = np.arange(len(y_vals))
+    coef = np.polyfit(x_vals, y_vals, 1)
+    trend_slope = coef[0]
+    max_future = 365
+    future_x = np.arange(len(y_vals) + max_future)
+    future_y = np.polyval(coef, future_x)
+    below = np.where(future_y < calm_threshold)[0]
+    if trend_slope < 0 and len(below) > 0:
+        idx = int(below[0])
+        pred_date = (s.index[-last_n] + pd.Timedelta(days=idx)).strftime("%d.%m.%Y")
+        st.info(t("war_end_result").format(calm_threshold, pred_date))
+    elif trend_slope >= 0:
+        st.warning(t("war_end_trend_rising"))
+    else:
+        st.warning(t("war_end_no_decrease"))
+else:
+    st.caption("Not enough data for trend extrapolation.")
+st.caption(t("war_end_disclaimer"))
+
+st.subheader(t("conclusions"))
 st.markdown(t("conclusions_text").format(lookback, forecast_horizon, escalation_threshold))

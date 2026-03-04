@@ -13,12 +13,12 @@ from config import CATEGORY_LABELS
 
 st.set_page_config(page_title="Geo", layout="wide")
 init_language()
-st.title(f"🗺️ {t('geo_title')}")
+st.title(t("geo_title"))
 st.markdown(t("geo_desc"))
 
 df = st.session_state.get("df_filtered", st.session_state.get("df"))
 if df is None:
-    st.warning("Load data first."); st.stop()
+    st.warning(t("load_data_main_first")); st.stop()
 
 st.subheader(t("interactive_map"))
 st.markdown(t("map_hint"))
@@ -38,7 +38,7 @@ if not map_df.empty:
     fig.update_layout(map_style=map_style, margin=dict(l=0, r=0, t=0, b=0))
     st.plotly_chart(fig, use_container_width=True)
 
-st.subheader(f"📍 {t('top_locations')}")
+st.subheader(t("top_locations"))
 st.markdown(t("top_locations_desc"))
 
 loc_stats = get_location_stats(df, top_n=20)
@@ -54,7 +54,7 @@ if not loc_stats.empty:
     with c2:
         st.dataframe(loc_stats, use_container_width=True, height=500)
 
-st.subheader(f"📈 {t('regional_activity')}")
+st.subheader(t("regional_activity"))
 st.markdown(t("regional_activity_desc"))
 
 if "region" in df.columns:
@@ -70,7 +70,7 @@ if "region" in df.columns:
         st.plotly_chart(fig_r, use_container_width=True)
 
 if "location" in df.columns and "category" in df.columns:
-    st.subheader(f"🏷️ {t('location_categories')}")
+    st.subheader(t("location_categories"))
     st.markdown(t("location_categories_desc"))
     top = df["location"].value_counts().head(10).index.tolist()
     lc = df[df["location"].isin(top)].groupby(["location", "category"]).size().reset_index(name="count")

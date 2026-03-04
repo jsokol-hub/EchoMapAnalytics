@@ -104,6 +104,7 @@ TRANSLATIONS = {
     "event_type": {"ru": "Тип события", "en": "Event type"},
     "count": {"ru": "Количество", "en": "Count"},
     "loading_data": {"ru": "Загружаю данные...", "en": "Loading data..."},
+    "load_data_main_first": {"ru": "Сначала загрузите данные на главной странице.", "en": "Load data on the main page first."},
     "loading_data_background": {
         "ru": "Данные подгружаются в фоне. Дашборд появится через несколько секунд.",
         "en": "Data is loading in the background. The dashboard will appear in a moment.",
@@ -363,10 +364,10 @@ TRANSLATIONS = {
     },
 
     # === Prediction (page 5) ===
-    "predict_title": {"ru": "Можно ли было предсказать?", "en": "Could it have been predicted?"},
+    "predict_title": {"ru": "Прогнозирование", "en": "Forecasting"},
     "predict_desc": {
-        "ru": "Здесь мы проверяем гипотезу: **содержали ли новости достаточно сигналов, чтобы заранее спрогнозировать эскалацию?** Для этого обучаем модель машинного обучения на исторических данных и смотрим, насколько хорошо она предсказывает периоды высокой напряжённости.",
-        "en": "Here we test the hypothesis: **did the news contain enough signals to predict escalation in advance?** We train a machine learning model on historical data and see how well it predicts periods of high tension.",
+        "ru": "Подготовка признаков, обучение модели эскалации и важность факторов. В конце — ориентировочная оценка снижения напряжённости по тренду индекса.",
+        "en": "Feature preparation, escalation model training, and factor importance. At the end — a rough estimate of when tension might decrease based on index trend.",
     },
     "model_params": {"ru": "Параметры модели", "en": "Model parameters"},
     "observation_window": {"ru": "Окно наблюдения (дни)", "en": "Observation window (days)"},
@@ -435,6 +436,30 @@ TRANSLATIONS = {
 - Nevertheless, **rising frequency and negativity of news** is an objective signal of escalation""",
     },
 
+    # War end forecast section
+    "war_end_title": {"ru": "Когда может закончиться?", "en": "When might it end?"},
+    "war_end_desc": {
+        "ru": "Экстраполяция тренда индекса эскалации вперёд: при сохранении текущей динамики снижения — ориентировочная дата, когда индекс может опуститься ниже порога «спокойствия».",
+        "en": "Extrapolating the escalation index trend forward: if the current decline continues — an approximate date when the index could fall below the 'calm' threshold.",
+    },
+    "war_end_calm_threshold": {"ru": "Порог «спокойствия» (индекс ниже)", "en": "'Calm' threshold (index below)"},
+    "war_end_result": {
+        "ru": "При сохранении текущего тренда индекс эскалации может опуститься ниже **{}** ориентировочно к **{}**.",
+        "en": "If the current trend continues, the escalation index could fall below **{}** around **{}**.",
+    },
+    "war_end_no_decrease": {
+        "ru": "При текущем тренде индекс не опускается ниже порога в течение года — экстраполяция не даёт даты снижения.",
+        "en": "With the current trend, the index does not fall below the threshold within a year — extrapolation gives no date for decline.",
+    },
+    "war_end_trend_rising": {
+        "ru": "Тренд индекса **растёт** — экстраполяция «когда закончится» по текущим данным не применима.",
+        "en": "The index trend is **rising** — extrapolating 'when it ends' from current data is not applicable.",
+    },
+    "war_end_disclaimer": {
+        "ru": "Это не прогноз окончания войны, а лишь экстраполяция тренда новостного индекса при упрощённых допущениях. Реальные события зависят от множества факторов.",
+        "en": "This is not a forecast of when the war will end, but an extrapolation of the news index trend under simplified assumptions. Real outcomes depend on many factors.",
+    },
+
     # Feature names
     "feat_composite": {"ru": "Общий индекс", "en": "Composite index"},
     "feat_kw_freq": {"ru": "Частота ключевых слов", "en": "Keyword frequency"},
@@ -469,12 +494,12 @@ def render_sidebar_nav():
     """Render sidebar navigation with translated page names (used when client.showSidebarNavigation = false)."""
     st.subheader(t("nav_sections"))
     try:
-        st.page_link("app.py", label=t("nav_home"), icon="🌍")
-        st.page_link("pages/01_📊_Частотный_анализ.py", label=t("freq_title"), icon="📊")
-        st.page_link("pages/02_🗺️_Геоаналитика.py", label=t("geo_title"), icon="🗺️")
-        st.page_link("pages/03_😤_Тональность.py", label=t("sentiment_title"), icon="😤")
-        st.page_link("pages/04_⚠️_Сигналы_эскалации.py", label=t("signals_title"), icon="⚠️")
-        st.page_link("pages/05_🔮_Прогнозирование.py", label=t("predict_title"), icon="🔮")
+        st.page_link("app.py", label=t("nav_home"), icon="")
+        st.page_link("pages/01_Frequency_Analysis.py", label=t("freq_title"), icon="")
+        st.page_link("pages/02_Geo_Analytics.py", label=t("geo_title"), icon="")
+        st.page_link("pages/03_Sentiment.py", label=t("sentiment_title"), icon="")
+        st.page_link("pages/04_Escalation_Signals.py", label=t("signals_title"), icon="")
+        st.page_link("pages/05_Forecasting.py", label=t("predict_title"), icon="")
     except Exception:
         st.caption("Use the sidebar pages below.")
 
@@ -486,7 +511,7 @@ def init_language():
 
     with st.sidebar:
         lang = st.radio(
-            "🌐",
+            "Language",
             ["en", "ru"],
             index=["en", "ru"].index(st.session_state["lang"]),
             format_func=lambda x: {"en": "English", "ru": "Русский"}[x],
