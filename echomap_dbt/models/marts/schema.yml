@@ -1,0 +1,166 @@
+version: 2
+
+models:
+  - name: mart_daily_news_volume
+    description: >
+      Daily rollups from int_geonews_base: one row per Israel calendar day in the analytics
+      window, with counts, signal/coordinate/source diversity metrics, and share ratios.
+
+    columns:
+      - name: published_date_il
+        description: Israel calendar date (grain key).
+        tests:
+          - not_null
+          - unique
+
+      - name: war_day_number
+        description: 1-based war/analytics day index from int (same as intermediate).
+        tests:
+          - not_null
+
+      - name: news_count
+        description: Number of news rows that day.
+        tests:
+          - not_null
+
+      - name: avg_signal_strength
+        description: Average signal_strength for the day (NULL if no numeric values).
+
+      - name: high_signal_count
+        description: Count of rows with is_high_signal true.
+
+      - name: multi_source_count
+        description: Count of rows with is_multi_source true.
+
+      - name: with_coordinates_count
+        description: Count of rows with has_final_coordinates true.
+
+      - name: unique_geonames_count
+        description: Distinct geoname values that day (NULL geonames excluded from distinct logic in source).
+
+      - name: unique_sources_count
+        description: Distinct data_source values that day.
+
+      - name: high_signal_share
+        description: high_signal_count / news_count.
+
+      - name: multi_source_share
+        description: multi_source_count / news_count.
+
+      - name: with_coordinates_share
+        description: with_coordinates_count / news_count.
+
+  - name: mart_hourly_activity
+    description: >
+      Hour-of-day activity from int_geonews_base: counts and signal metrics per Israel
+      calendar date and local hour (0–23). Grain is one row per (published_date_il, published_hour_il).
+
+    columns:
+      - name: published_date_il
+        description: Israel calendar date (grain key).
+        tests:
+          - not_null
+
+      - name: published_hour_il
+        description: Hour of publication 0–23 in Asia/Jerusalem (grain key).
+        tests:
+          - not_null
+
+      - name: news_count
+        description: Number of news rows in this date × hour bucket.
+        tests:
+          - not_null
+
+      - name: avg_signal_strength
+        description: Average signal_strength in the bucket (NULL if no numeric values).
+
+      - name: high_signal_count
+        description: Count of rows with is_high_signal true in the bucket.
+
+  - name: mart_category_daily
+    description: >
+      Daily counts by category_clean from int_geonews_base (analytics window already applied).
+
+    columns:
+      - name: published_date_il
+        description: Israel calendar date.
+        tests:
+          - not_null
+
+      - name: war_day_number
+        description: War/analytics day index from int.
+        tests:
+          - not_null
+
+      - name: category_clean
+        description: Normalized category (never NULL in int; includes 'unknown').
+        tests:
+          - not_null
+
+      - name: news_count
+        description: Rows in this date × category bucket.
+        tests:
+          - not_null
+
+      - name: avg_signal_strength
+        description: Average signal_strength in the bucket.
+
+      - name: high_signal_count
+        description: Count of high-signal rows in the bucket.
+
+  - name: mart_location_summary
+    description: >
+      Aggregates by place name and exact final coordinates (lat/lon/geom/source) for rows
+      with coordinates and non-null geoname. Same geoname with different coordinates
+      produces separate rows.
+
+    columns:
+      - name: geoname
+        description: Place name from int.
+        tests:
+          - not_null
+
+      - name: final_lat
+        description: Parser/wiki resolved latitude (grain key).
+        tests:
+          - not_null
+
+      - name: final_lon
+        description: Parser/wiki resolved longitude (grain key).
+        tests:
+          - not_null
+
+      - name: final_geom
+        description: PostGIS geometry (grain key; grouping uses value equality).
+
+      - name: coordinate_source
+        description: parser, wiki, or none from int.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["parser", "wiki", "none"]
+
+      - name: news_count
+        description: Number of news items at this location grain.
+        tests:
+          - not_null
+
+      - name: avg_signal_strength
+        description: Average signal_strength for the bucket.
+
+      - name: high_signal_count
+        description: Count of high-signal rows.
+
+      - name: multi_source_count
+        description: Count of multi-source rows.
+
+      - name: first_seen_at
+        description: Minimum published_at (UTC timestamptz) in the bucket.
+        tests:
+          - not_null
+
+      - name: last_seen_at
+        description: Maximum published_at (UTC timestamptz) in the bucket.
+        tests:
+          - not_null
