@@ -1,0 +1,142 @@
+version: 2
+
+models:
+  - name: int_geonews_base
+    description: >
+      One row per news item after staging, restricted to the configured analytics window
+      (vars analytics_start_local / break_1_local, interpreted as Asia/Jerusalem local time).
+      Adds normalized dimensions, signal/source flags, and war_day_number for dashboards.
+
+    columns:
+      - name: news_id
+        description: News identifier; same as staging (primary key within this model).
+        tests:
+          - not_null
+          - unique
+
+      - name: published_at
+        description: Publication instant (timestamptz); UTC from staging.
+        tests:
+          - not_null
+
+      - name: published_date_il
+        description: Calendar date in Asia/Jerusalem (Israel local date).
+        tests:
+          - not_null
+
+      - name: published_hour_il
+        description: Hour 0–23 in Asia/Jerusalem.
+        tests:
+          - not_null
+
+      - name: war_day_number
+        description: >
+          1-based day index within the analytics window: difference between published_date_il
+          and the Israel calendar date of analytics_start_local, plus 1.
+        tests:
+          - not_null
+
+      - name: message
+        description: Message text from staging (may be NULL).
+
+      - name: geoname
+        description: Place name from staging (may be NULL).
+
+      - name: category
+        description: Raw category from staging (may be NULL).
+
+      - name: category_clean
+        description: lower(trim(category)) with NULL mapped to 'unknown'.
+        tests:
+          - not_null
+
+      - name: topics
+        description: Topics string from staging (may be NULL).
+
+      - name: sentiment
+        description: Raw sentiment from staging (may be NULL).
+
+      - name: sentiment_clean
+        description: lower(trim(sentiment)) with NULL mapped to 'unknown'.
+        tests:
+          - not_null
+
+      - name: signal_strength
+        description: Raw signal strength (real; may be NULL).
+
+      - name: is_high_signal
+        description: True when signal_strength is at least 0.7 (otherwise false if NULL or lower).
+        tests:
+          - accepted_values:
+              arguments:
+                values: [true, false]
+
+      - name: data_source
+        description: Data source label (may be NULL).
+
+      - name: data_source_link
+        description: Primary source URL (may be NULL).
+
+      - name: data_source_links
+        description: Additional source links text (may be NULL).
+
+      - name: source_count
+        description: Integer count of sources from staging (may be NULL).
+
+      - name: is_multi_source
+        description: True when source_count is greater than 1.
+        tests:
+          - accepted_values:
+              arguments:
+                values: [true, false]
+
+      - name: final_lat
+        description: Final latitude from staging (may be NULL).
+
+      - name: final_lon
+        description: Final longitude from staging (may be NULL).
+
+      - name: final_geom
+        description: Final PostGIS geometry from staging (may be NULL).
+
+      - name: coordinate_source
+        description: parser, wiki, or none — full pair source from staging.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["parser", "wiki", "none"]
+
+      - name: has_message
+        description: Staging flag — non-empty message after cleanup.
+        tests:
+          - accepted_values:
+              arguments:
+                values: [true, false]
+
+      - name: has_geoname
+        description: Staging flag — geoname present after cleanup.
+        tests:
+          - accepted_values:
+              arguments:
+                values: [true, false]
+
+      - name: has_final_coordinates
+        description: Staging flag — both final_lat and final_lon are non-NULL.
+        tests:
+          - accepted_values:
+              arguments:
+                values: [true, false]
+
+      - name: has_category
+        description: True when raw category is not NULL.
+        tests:
+          - accepted_values:
+              arguments:
+                values: [true, false]
+
+      - name: has_sentiment
+        description: True when raw sentiment is not NULL.
+        tests:
+          - accepted_values:
+              arguments:
+                values: [true, false]

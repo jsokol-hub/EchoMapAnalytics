@@ -37,6 +37,7 @@ models:
     intermediate:
       +materialized: view
 
+# Project variables (used by int_geonews_base and downstream models).
 vars:
-  war_start_date: "2026-02-28 02:00:00"
-  break_1_date: "2026-04-08 08:00:00"
+  analytics_start_local: "2026-02-28 02:00:00"
+  break_1_local: "2026-04-08 08:00:00"
