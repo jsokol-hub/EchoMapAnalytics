@@ -182,6 +182,20 @@ def _inject_css() -> None:
         }
         """
     )
+    # Заголовки из st.markdown(unsafe_allow_html) не наследуют --text-color → fallback был тёмным.
+    insight_block = (
+        """
+        .insight-title { font-size: 1.25rem; font-weight: 650; color: #fafafa !important; margin: 0 0 0.2rem 0; letter-spacing: -0.02em; }
+        .insight-caption { color: rgba(250, 250, 250, 0.72) !important; opacity: 1 !important; font-size: 0.88rem; margin: 0 0 0.6rem 0; }
+        .product-subtitle { color: rgba(250, 250, 250, 0.78) !important; opacity: 1 !important; font-size: 1rem; margin-top: -0.35rem; margin-bottom: 0.75rem; }
+        """
+        if dark
+        else """
+        .insight-title { font-size: 1.25rem; font-weight: 650; color: var(--text-color, #0f172a); margin: 0 0 0.2rem 0; letter-spacing: -0.02em; }
+        .insight-caption { color: var(--text-color, #64748b); opacity: 0.75; font-size: 0.88rem; margin: 0 0 0.6rem 0; }
+        .product-subtitle { color: var(--text-color, #64748b); opacity: 0.8; font-size: 1rem; margin-top: -0.35rem; margin-bottom: 0.75rem; }
+        """
+    )
     st.markdown(
         f"""
         <style>
@@ -221,9 +235,7 @@ def _inject_css() -> None:
             line-height: 1.4;
         }}
         .hero-insight .decline {{ color: #fecaca; }}
-        .insight-title {{ font-size: 1.25rem; font-weight: 650; color: var(--text-color, #0f172a); margin: 0 0 0.2rem 0; letter-spacing: -0.02em; }}
-        .insight-caption {{ color: var(--text-color, #64748b); opacity: 0.75; font-size: 0.88rem; margin: 0 0 0.6rem 0; }}
-        .product-subtitle {{ color: var(--text-color, #64748b); opacity: 0.8; font-size: 1rem; margin-top: -0.35rem; margin-bottom: 0.75rem; }}
+        {insight_block}
         .tooltip-icon {{
             display: inline-block;
             width: 18px; height: 18px;
