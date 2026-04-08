@@ -31,6 +31,8 @@ Source (PostgreSQL)          dbt (transform)                Dashboard (Streamlit
 
 ```
 EchoMapAnalytics/
+├── captain-definition        # CapRover → dashboard/Dockerfile
+├── .dockerignore             # trim build context (excludes .env, dbt tree)
 ├── echomap_dbt/              # dbt project
 │   ├── dbt_project.yml       # project config + analytics window vars
 │   ├── models/
@@ -41,6 +43,7 @@ EchoMapAnalytics/
 │   └── docs/METHODOLOGY.md   # methodology reference
 │
 ├── dashboard/                # Streamlit app
+│   ├── Dockerfile            # production image (build from repo root)
 │   ├── app.py                # main dashboard (4 tabs)
 │   ├── db.py                 # PostgreSQL connection + data loading
 │   ├── i18n.py               # EN/RU internationalisation

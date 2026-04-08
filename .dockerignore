@@ -1,0 +1,11 @@
+**/.git
+**/__pycache__
+**/*.py[cod]
+**/.venv
+**/.env
+dashboard/.env
+.gitignore
+*.md
+echomap_dbt
+.cursor
+.vscode

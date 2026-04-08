@@ -40,6 +40,20 @@ Interactive Streamlit dashboard for visualising dbt mart tables.
 
    Open http://localhost:8501.
 
+## Deploy on CapRover (same host as DB)
+
+The repo root contains `captain-definition` pointing at `dashboard/Dockerfile`. Build context is the **repository root**, so the image only bundles the `dashboard/` tree (see root `.dockerignore`).
+
+1. **CapRover**: Create a new app (for example `echomap-dashboard`) and deploy from Git or use `caprover deploy`; ensure the deployed branch includes `captain-definition` at the repo root.
+2. **HTTP port**: In **App Configs → HTTP Settings**, set **Container HTTP Port** to **8501** (must match `EXPOSE` in the Dockerfile).
+3. **Environment variables**: In **App Configs → App Env Vars**, set at least:
+   - `ECHOMAP_DBT_SCHEMA` — same as dbt target schema
+   - Either `DATABASE_URL` **or** `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`
+
+`DB_HOST` must be reachable **from inside the container**: another CapRover app hostname (for example `srv-captain--your-db-app`), the host Docker bridge gateway (often `172.17.0.1`) if Postgres listens on all interfaces, or a private LAN IP — **not** `localhost` unless Postgres runs in the same container. If Postgres was only bound to `127.0.0.1` on the host, allow access from the Docker network or run the DB as a CapRover service.
+
+4. **Websockets**: CapRover’s default app proxy supports WebSockets; no extra nginx snippet is required for a normal Streamlit app.
+
 ## Tabs
 
 | Tab | Data sources | What it shows |
