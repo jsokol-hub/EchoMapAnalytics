@@ -42,6 +42,10 @@ select
     end as is_high_signal,
 
     data_source,
+    coalesce(
+        nullif(trim(split_part(data_source, ',', 1)), ''),
+        'unknown'
+    ) as data_source_clean,
     data_source_link,
     data_source_links,
 
@@ -66,3 +70,21 @@ select
 from base
 where published_at_il >= '{{ var("analytics_start_local") }}'::timestamp
   and published_at_il < '{{ var("break_1_local") }}'::timestamp
+  -- исключаем ракетные оповещения (Цева Адом / Tzeva Adom / צבע אדום) и короткие перечисления населённых пунктов
+  and not (
+      coalesce(message, '') ilike '%цева адом%'
+      or coalesce(translation_ru, '') ilike '%цева адом%'
+      or coalesce(message, '') ilike '%tzeva adom%'
+      or coalesce(translation_en, '') ilike '%tzeva adom%'
+      or coalesce(message, '') ilike '%צבע אדום%'
+      or coalesce(translation_he, '') ilike '%צבע אדום%'
+      or coalesce(message, '') ilike '%צה"א אדום%'
+      or coalesce(translation_he, '') ilike '%צה"א אדום%'
+  )
+  and not (
+      length(coalesce(message, '')) <= 800
+      and (
+          length(coalesce(message, ''))
+          - length(replace(coalesce(message, ''), ',', ''))
+      ) >= 5
+  )

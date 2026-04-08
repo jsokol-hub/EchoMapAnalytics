@@ -1,49 +1,76 @@
-# EchoMap dashboard (Streamlit)
+# EchoMap Dashboard
 
-Reads dbt **mart** tables from PostgreSQL (same database/schema where `dbt run` materializes marts).
+Interactive Streamlit dashboard for visualising dbt mart tables.
+
+## Features
+
+- **4 tabs**: Summary, Timeline, Hourly patterns, Geography
+- **Bilingual**: EN / RU toggle in the sidebar (all labels, tooltips, chart titles, narratives)
+- **Anomaly detection**: automatic annotation of sharp volume drops on the daily chart
+- **Interactive map**: scatter map (OpenStreetMap) with bubble sizing by news count
+- **Smart caching**: single DB session, narrow SELECTs, configurable TTL
 
 ## Setup
 
-1. Build marts:
+1. **Build dbt marts** (from the repo root):
 
    ```bash
    cd echomap_dbt
    dbt run
    ```
 
-2. Configure connection — copy `.env.example` to `.env` and set:
-
-   - **`ECHOMAP_DBT_SCHEMA`** — target schema from your dbt profile (often `public` or a custom schema name).
-   - Either **`DATABASE_URL`** (`postgresql+psycopg2://...`) or **`DB_HOST`**, **`DB_PORT`**, **`DB_NAME`**, **`DB_USER`**, **`DB_PASSWORD`**.
-
-3. Install and run:
+2. **Configure connection**:
 
    ```bash
    cd dashboard
+   cp .env.example .env
+   # Edit .env — set schema and credentials
+   ```
+
+3. **Install and run**:
+
+   ```bash
    python -m venv .venv
-   .venv\Scripts\activate
+   .venv/Scripts/activate          # Windows
+   # source .venv/bin/activate     # macOS / Linux
+
    pip install -r requirements.txt
    streamlit run app.py
    ```
 
-Open the URL shown in the terminal (usually http://localhost:8501).
-
-## Performance & tuning
-
-- Data is loaded **once per cache window** (default **600s**) with **narrow SQL** and a **single DB session** — use env **`ECHOMAP_DASH_CACHE_SEC`** to change TTL.
-- Locations: only the top **N** rows by `news_count` are fetched (**`ECHOMAP_DASH_LOC_LIMIT`**, default `350`).
-- Long date ranges: the **hourly** heatmap switches to **weekly** rows when there are more than **45** distinct days in the filter.
+   Open http://localhost:8501.
 
 ## Tabs
 
-- **Summary** — Russian narrative + KPI table from `mart_war_window_summary`, pies (sentiment / coordinate source), top categories (`mart_top_categories_period`). Describes the **full** dbt window (not sidebar dates).
-- **Overview** — daily volume, share metrics, table.
-- **Categories** — top categories in the selected date range.
-- **Sentiment** — `mart_sentiment_daily` (stacked area, filtered dates).
-- **Sources** — `mart_data_source_daily` and `mart_coordinate_source_daily` (stacked areas).
-- **Hourly** — heatmap of news count by Israel date × hour.
-- **Locations** — map + table (top *N* by `news_count`).
+| Tab | Data sources | What it shows |
+|-----|-------------|---------------|
+| **Summary** | `mart_war_window_summary`, `mart_top_categories_period`, `mart_sentiment_daily`, `mart_coordinate_source_daily` | Full-period overview: narrative, KPIs, sentiment and coordinate pies, top categories table |
+| **Timeline** | `mart_daily_news_volume`, `mart_category_daily`, `mart_sentiment_daily`, `mart_data_source_daily`, `mart_coordinate_source_daily` | Day-by-day dynamics: volume line, quality indicators, categories bar, sentiment/source area charts |
+| **Hourly patterns** | `mart_hourly_activity` | Heatmap (hour x date), average hourly bar chart |
+| **Geography** | `mart_location_summary` | Interactive scatter map, location table |
 
-After pulling new marts, run **`dbt run`** (or `dbt run --select marts`) so Postgres has `mart_sentiment_daily`, `mart_data_source_daily`, `mart_coordinate_source_daily`, `mart_war_window_summary`, `mart_top_categories_period`.
+## Environment variables
 
-Methodology: `echomap_dbt/docs/METHODOLOGY.md`.
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `ECHOMAP_DBT_SCHEMA` | `public` | Schema where dbt materialises mart tables |
+| `DATABASE_URL` | — | Full SQLAlchemy connection string |
+| `DB_HOST` | `localhost` | PostgreSQL host |
+| `DB_PORT` | `5432` | PostgreSQL port |
+| `DB_NAME` | `postgres` | Database name |
+| `DB_USER` | `postgres` | Database user |
+| `DB_PASSWORD` | — | Database password |
+| `ECHOMAP_DASH_CACHE_SEC` | `600` | Data cache TTL (seconds) |
+| `ECHOMAP_DASH_LOC_LIMIT` | `350` | Max location rows fetched |
+
+## File structure
+
+| File | Role |
+|------|------|
+| `app.py` | Main dashboard — layout, tabs, charts, annotations |
+| `db.py` | PostgreSQL connection, pooling, data loading |
+| `i18n.py` | EN/RU translations, tooltips, column renames, formatters |
+| `narrative.py` | Bilingual summary narrative generator |
+| `requirements.txt` | Python dependencies |
+| `.env.example` | Connection template |
+| `.streamlit/config.toml` | Streamlit theme and performance settings |

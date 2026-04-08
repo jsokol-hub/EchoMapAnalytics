@@ -62,19 +62,19 @@ _STRINGS: dict[str, dict[str, str]] = {
     # -- metrics --
     "metric_news_in_range": {"en": "News in range", "ru": "Новости в диапазоне"},
     "metric_days_in_range": {"en": "Days in range", "ru": "Дней в диапазоне"},
-    "metric_avg_signal": {"en": "Avg signal strength", "ru": "Средняя сила сигнала"},
+    "metric_avg_signal": {"en": "Avg credibility score", "ru": "Средняя оценка достоверности"},
     "metric_total_news": {"en": "Total news", "ru": "Всего новостей"},
     "metric_calendar_days": {"en": "Calendar days", "ru": "Календарных дней"},
     "metric_active_days": {"en": "Active days", "ru": "Активных дней"},
 
     # -- tooltips for metrics --
     "tip_signal": {
-        "en": "Signal strength ranges 0–1. Higher values indicate stronger evidence / credibility.",
-        "ru": "Сила сигнала от 0 до 1. Высокие значения означают более достоверную новость.",
+        "en": "Credibility score (0–1). Higher values mean the item is backed by stronger evidence.",
+        "ru": "Оценка достоверности (0–1). Чем выше — тем надёжнее подтверждена новость.",
     },
     "tip_high_signal": {
-        "en": "Share of news with signal strength >= 0.7 (considered reliable).",
-        "ru": "Доля новостей с силой сигнала >= 0.7 (считаются надёжными).",
+        "en": "Share of news with credibility score >= 0.7 (considered reliable).",
+        "ru": "Доля новостей с оценкой достоверности >= 0.7 (считаются надёжными).",
     },
     "tip_multi_source": {
         "en": "Share of news confirmed by more than one source.",
@@ -125,6 +125,128 @@ _STRINGS: dict[str, dict[str, str]] = {
     "chart_coord_pie": {"en": "Coordinate source (full period)", "ru": "Источник координат (весь период)"},
     "chart_top_categories_period": {"en": "Top categories (full period)", "ru": "Топ категорий (весь период)"},
 
+    # -- tab intros --
+    "intro_summary": {
+        "en": (
+            "A high-level overview of the **entire analytics window** — how many news items were "
+            "collected, how reliable the data is, which topics dominate, and what the sentiment "
+            "looks like. Use this tab to get an overall picture before diving into details."
+        ),
+        "ru": (
+            "Общий обзор **всего аналитического окна** — сколько новостей собрано, "
+            "насколько надёжны данные, какие темы доминируют и как выглядит тональность. "
+            "Используйте эту вкладку для общей картины, прежде чем углубляться в детали."
+        ),
+    },
+    "intro_timeline": {
+        "en": (
+            "Day-by-day dynamics of the conflict coverage. This tab shows how the volume of news, "
+            "its quality indicators, topic distribution, and emotional tone changed over the "
+            "selected date range. Spikes often correspond to major events on the ground."
+        ),
+        "ru": (
+            "Динамика освещения конфликта по дням. Здесь показано, как менялись объём новостей, "
+            "показатели их качества, распределение по темам и эмоциональная тональность за "
+            "выбранный диапазон дат. Всплески часто соответствуют крупным событиям."
+        ),
+    },
+    "intro_hourly": {
+        "en": (
+            "When does the news cycle peak? This tab reveals intra-day patterns — which hours "
+            "see the most activity, and how this rhythm shifts across the period. "
+            "Darker cells on the heatmap = more news at that hour."
+        ),
+        "ru": (
+            "Когда наступает пик новостного цикла? Эта вкладка раскрывает суточные паттерны — "
+            "в какие часы наблюдается наибольшая активность и как этот ритм смещается "
+            "по периоду. Тёмные ячейки на тепловой карте = больше новостей в этот час."
+        ),
+    },
+    "intro_geography": {
+        "en": (
+            "Where do the news events take place? This tab maps every location mentioned in the "
+            "coverage. Bubble size reflects the number of news items; colour intensity shows "
+            "concentration. Not all news has coordinates — see the table for details."
+        ),
+        "ru": (
+            "Где происходят новостные события? Эта вкладка отображает на карте все упомянутые "
+            "локации. Размер маркера отражает число новостей, интенсивность цвета — "
+            "концентрацию. Не у всех новостей есть координаты — подробности в таблице."
+        ),
+    },
+
+    # -- section explanations within tabs --
+    "explain_daily_volume": {
+        "en": "Each point is one calendar day. Sharp rises or drops often signal major military or political events.",
+        "ru": "Каждая точка — один календарный день. Резкие подъёмы или спады часто сигнализируют о крупных военных или политических событиях.",
+    },
+    "explain_quality_mix": {
+        "en": (
+            "Three quality indicators tracked daily: **High credibility** — share of items "
+            "with score >= 0.7; **Multi-source** — confirmed by 2+ sources; "
+            "**With coordinates** — has a geographic location. Higher is better."
+        ),
+        "ru": (
+            "Три показателя качества по дням: **Высокая достоверность** — доля новостей "
+            "с оценкой >= 0.7; **Неск. источников** — подтверждено 2+ источниками; "
+            "**С координатами** — есть геолокация. Чем выше — тем лучше."
+        ),
+    },
+    "explain_categories": {
+        "en": "How news items are distributed across topic categories for the selected period. Categories are assigned during data collection.",
+        "ru": "Как новости распределены по тематическим категориям за выбранный период. Категории присваиваются при сборе данных.",
+    },
+    "explain_sentiment": {
+        "en": "Automated tone classification of each news item. Stacked areas let you see whether coverage tilts positive, negative, or neutral over time.",
+        "ru": "Автоматическая классификация тональности каждой новости. Наложенные области показывают, смещается ли освещение в сторону позитива, негатива или нейтральности.",
+    },
+    "explain_sources": {
+        "en": "Which data sources (channels, feeds) produce the most coverage over time. Dominance of one source may indicate information concentration.",
+        "ru": "Какие источники данных (каналы, ленты) производят наибольшее покрытие. Доминирование одного источника может указывать на концентрацию информации.",
+    },
+    "explain_coord_pipeline": {
+        "en": (
+            "How coordinates are obtained: **parser** extracts them from text automatically, "
+            "**wiki** looks up the location on Wikipedia, **none** means the item has no coordinates."
+        ),
+        "ru": (
+            "Как получены координаты: **parser** извлекает из текста автоматически, "
+            "**wiki** ищет локацию в Википедии, **none** — координат нет."
+        ),
+    },
+    "explain_heatmap": {
+        "en": "Rows are dates (or weeks for long ranges), columns are hours 0–23 in Israel time. Brighter cells = more news published at that hour.",
+        "ru": "Строки — даты (или недели для длинных диапазонов), столбцы — часы 0–23 по Израилю. Яркие ячейки = больше новостей в этот час.",
+    },
+    "explain_hourly_avg": {
+        "en": "Average number of news items published at each hour of the day across the selected period. Helps identify peak and quiet hours.",
+        "ru": "Среднее количество новостей, опубликованных в каждый час дня за выбранный период. Помогает выявить часы пик и затишья.",
+    },
+    "explain_map": {
+        "en": "Each bubble is a location mentioned in the news. Larger and warmer-coloured bubbles mean more coverage at that place.",
+        "ru": "Каждый маркер — место, упомянутое в новостях. Чем больше и теплее по цвету — тем больше новостей привязано к этому месту.",
+    },
+
+    # -- volume anomaly --
+    "volume_drop_callout": {
+        "en": (
+            "**Sharp volume change.** Around **{date}** the daily volume dropped by "
+            "**{pct}** (from {before} to {after} news/day). "
+            "This may reflect changes in the data collection pipeline, source activity, "
+            "or events on the ground. Metrics in this period should be interpreted with caution."
+        ),
+        "ru": (
+            "**Резкое изменение объёма.** Примерно **{date}** суточный объём упал на "
+            "**{pct}** (с {before} до {after} новостей/день). "
+            "Это может быть связано с изменениями в конвейере сбора данных, активности источников "
+            "или событиями на местах. Метрики в этом периоде следует интерпретировать с осторожностью."
+        ),
+    },
+    "volume_drop_annotation": {
+        "en": "Volume drop",
+        "ru": "Падение объёма",
+    },
+
     # -- misc UI --
     "empty_no_data": {"en": "No data in this date range.", "ru": "Нет данных в этом диапазоне дат."},
     "empty_run_dbt": {
@@ -135,14 +257,14 @@ _STRINGS: dict[str, dict[str, str]] = {
         "en": "Could not load data. Check `.env`, database connection, and `ECHOMAP_DBT_SCHEMA`.",
         "ru": "Не удалось загрузить данные. Проверьте `.env`, подключение к БД и `ECHOMAP_DBT_SCHEMA`.",
     },
-    "expander_raw_data": {"en": "Raw data", "ru": "Сырые данные"},
+    "expander_raw_data": {"en": "Raw data table", "ru": "Таблица с данными"},
     "heatmap_weekly_note": {
         "en": "Long range ({n} days): heatmap aggregated by **week** (rows = week starting Monday).",
         "ru": "Длинный диапазон ({n} дней): тепловая карта агрегирована по **неделям** (строки — начало недели, понедельник).",
     },
     "summary_full_period_note": {
-        "en": "The **Summary** tab covers the full analytics window (dbt vars). The date filter on the left affects other tabs.",
-        "ru": "Вкладка **Сводка** охватывает весь аналитический период (переменные dbt). Фильтр дат слева влияет на остальные вкладки.",
+        "en": "This tab covers the **full analytics window** (all dbt data). The date filter on the left affects the other three tabs.",
+        "ru": "Эта вкладка охватывает **весь аналитический период** (все данные dbt). Фильтр дат слева влияет на три другие вкладки.",
     },
     "summary_key_metrics": {"en": "Key metrics", "ru": "Ключевые показатели"},
 }
@@ -170,12 +292,12 @@ _COL_RENAMES: dict[str, dict[str, str]] = {
     "sentiment_clean": {"en": "Sentiment", "ru": "Тональность"},
     "data_source_clean": {"en": "Data source", "ru": "Источник данных"},
     "coordinate_source": {"en": "Coordinate source", "ru": "Источник координат"},
-    "signal_strength": {"en": "Signal strength", "ru": "Сила сигнала"},
-    "avg_signal_strength": {"en": "Avg signal", "ru": "Ср. сигнал"},
-    "high_signal_share": {"en": "High-signal share", "ru": "Доля с высоким сигналом"},
+    "signal_strength": {"en": "Credibility score", "ru": "Оценка достоверности"},
+    "avg_signal_strength": {"en": "Avg credibility", "ru": "Ср. достоверность"},
+    "high_signal_share": {"en": "High-credibility share", "ru": "Доля с высокой достоверностью"},
     "multi_source_share": {"en": "Multi-source share", "ru": "Доля из неск. источников"},
     "with_coordinates_share": {"en": "With-coordinates share", "ru": "Доля с координатами"},
-    "high_signal_count": {"en": "High-signal count", "ru": "Кол-во с высоким сигналом"},
+    "high_signal_count": {"en": "High-credibility count", "ru": "Кол-во с высокой достоверностью"},
     "geoname": {"en": "Location name", "ru": "Название места"},
     "final_lat": {"en": "Latitude", "ru": "Широта"},
     "final_lon": {"en": "Longitude", "ru": "Долгота"},
@@ -192,7 +314,7 @@ _COL_RENAMES: dict[str, dict[str, str]] = {
 # Quality-mix line renames
 # ---------------------------------------------------------------------------
 QUALITY_RENAMES: dict[str, dict[str, str]] = {
-    "high_signal_share": {"en": "High signal", "ru": "Высокий сигнал"},
+    "high_signal_share": {"en": "High credibility", "ru": "Высокая достоверность"},
     "multi_source_share": {"en": "Multi-source", "ru": "Неск. источников"},
     "with_coordinates_share": {"en": "With coordinates", "ru": "С координатами"},
 }

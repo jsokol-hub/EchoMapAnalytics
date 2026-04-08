@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+*.so
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment / secrets
+.env
+*.env.local
+.streamlit/secrets.toml
+
+# dbt
+target/
+dbt_packages/
+logs/
+
+# Streamlit
+dashboard/__pycache__/
+dashboard/logs/
+
+# Misc
+*.bak
+*.tmp

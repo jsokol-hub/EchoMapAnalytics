@@ -1,7 +1,7 @@
 select
     published_date_il,
     war_day_number,
-    coalesce(nullif(trim(data_source), ''), 'unknown') as data_source_clean,
+    data_source_clean,
 
     count(*) as news_count,
     avg(signal_strength) as avg_signal_strength,

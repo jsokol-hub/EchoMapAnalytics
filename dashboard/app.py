@@ -121,6 +121,33 @@ def _plotly_cfg() -> dict:
     return {"displayModeBar": "hover"}
 
 
+_DROP_THRESHOLD = -0.55  # -55 % day-over-day
+
+def _detect_collection_gap(daily: pd.DataFrame) -> dict | None:
+    """Find the biggest single-day percentage drop exceeding the threshold.
+
+    Excludes the last 2 rows — the tail of the analytics window almost always
+    has partial data and is not a real collection gap.
+    """
+    if len(daily) < 4:
+        return None
+    df = daily.sort_values("published_date_il").copy()
+    df = df.iloc[:-2]  # drop last 2 days (edge of analytics window)
+    df["_prev"] = df["news_count"].shift(1)
+    df["_pct"] = (df["news_count"] - df["_prev"]) / df["_prev"]
+    candidates = df.dropna(subset=["_pct"])
+    candidates = candidates[candidates["_pct"] <= _DROP_THRESHOLD]
+    if candidates.empty:
+        return None
+    worst = candidates.loc[candidates["_pct"].idxmin()]
+    return {
+        "date": worst["published_date_il"],
+        "before": int(worst["_prev"]),
+        "after": int(worst["news_count"]),
+        "pct": f"{abs(worst['_pct']) * 100:.0f} %",
+    }
+
+
 # ---------------------------------------------------------------------------
 # Sidebar
 # ---------------------------------------------------------------------------
@@ -167,9 +194,26 @@ def _sidebar(daily: pd.DataFrame) -> tuple:
 # Tab: Summary
 # ---------------------------------------------------------------------------
 
+def _section(title_key: str, explain_key: str | None = None) -> None:
+    """Render a section header with optional explanatory text below it."""
+    lang = _lang()
+    st.markdown(f"##### {t(title_key, lang)}")
+    if explain_key:
+        st.markdown(
+            f"<p style='color:#64748b;font-size:0.92rem;margin-top:-0.35rem;"
+            f"margin-bottom:0.75rem;'>{t(explain_key, lang)}</p>",
+            unsafe_allow_html=True,
+        )
+
+
 def _tab_summary(bundle: dict[str, pd.DataFrame]) -> None:
     lang = _lang()
 
+    st.markdown(
+        f"<p style='color:#475569;font-size:0.95rem;margin-bottom:1rem;'>"
+        f"{t('intro_summary', lang)}</p>",
+        unsafe_allow_html=True,
+    )
     st.caption(t("summary_full_period_note", lang))
 
     war_summary = bundle.get("war_summary")
@@ -191,6 +235,7 @@ def _tab_summary(bundle: dict[str, pd.DataFrame]) -> None:
     with k3:
         st.metric(t("metric_active_days", lang), fmt_int(row.get("distinct_news_days")))
 
+    st.divider()
     c1, c2 = st.columns(2)
 
     sent_tot = bundle.get("sentiment", pd.DataFrame())
@@ -232,6 +277,7 @@ def _tab_summary(bundle: dict[str, pd.DataFrame]) -> None:
             st.caption(t("tip_coordinate_source", lang))
 
     if not top_cat_full.empty:
+        st.divider()
         st.markdown(f"##### {t('chart_top_categories_period', lang)}")
         st.dataframe(
             _human_df(top_cat_full.head(20), lang),
@@ -255,6 +301,12 @@ def _tab_timeline(
 ) -> None:
     lang = _lang()
 
+    st.markdown(
+        f"<p style='color:#475569;font-size:0.95rem;margin-bottom:1rem;'>"
+        f"{t('intro_timeline', lang)}</p>",
+        unsafe_allow_html=True,
+    )
+
     # -- KPIs row -----------------------------------------------------------
     k1, k2, k3 = st.columns(3)
     with k1:
@@ -267,7 +319,8 @@ def _tab_timeline(
         st.metric(t("metric_days_in_range", lang), fmt_int(len(daily_f)))
 
     # -- Daily volume -------------------------------------------------------
-    st.markdown(f"##### {t('chart_daily_volume', lang)}")
+    st.divider()
+    _section("chart_daily_volume", "explain_daily_volume")
     if daily_f.empty:
         _empty()
     else:
@@ -283,8 +336,30 @@ def _tab_timeline(
             },
         )
         fig.update_traces(line=dict(width=2.5), marker=dict(size=6))
+
+        gap = _detect_collection_gap(daily_f)
+        if gap:
+            gap_x = str(gap["date"])
+            fig.add_shape(
+                type="line", x0=gap_x, x1=gap_x, y0=0, y1=1,
+                yref="y domain", line=dict(width=2, dash="dash", color="#ef4444"),
+            )
+            fig.add_annotation(
+                x=gap_x, y=1, yref="y domain",
+                text=t("volume_drop_annotation", lang),
+                showarrow=False, font=dict(size=12, color="#ef4444"),
+                xanchor="left", yanchor="top", xshift=6,
+            )
+
         _style_fig(fig, height=400)
         st.plotly_chart(fig, use_container_width=True, config=_plotly_cfg())
+
+        if gap:
+            st.warning(t(
+                "volume_drop_callout", lang,
+                date=gap["date"], pct=gap["pct"],
+                before=f"{gap['before']:,}", after=f"{gap['after']:,}",
+            ))
 
     # -- Quality mix --------------------------------------------------------
     share_cols = [
@@ -292,7 +367,8 @@ def _tab_timeline(
         if c in daily_f.columns
     ]
     if share_cols and not daily_f.empty:
-        st.markdown(f"##### {t('chart_quality_mix', lang)}")
+        st.divider()
+        _section("chart_quality_mix", "explain_quality_mix")
         qr = quality_rename(lang)
         daily_s = daily_f.rename(columns={k: qr.get(k, k) for k in share_cols})
         fig2 = px.line(
@@ -308,14 +384,12 @@ def _tab_timeline(
         fig2.update_traces(mode="lines+markers", marker=dict(size=4))
         _style_fig(fig2, height=360)
         st.plotly_chart(fig2, use_container_width=True, config=_plotly_cfg())
-        st.caption(
-            f"{t('tip_high_signal', lang)} · {t('tip_multi_source', lang)} · {t('tip_with_coords', lang)}"
-        )
 
     # -- Categories bar -----------------------------------------------------
+    st.divider()
     cat = bundle["category"]
     cat_f = _filter_days(cat, date_from, date_to)
-    st.markdown(f"##### {t('chart_categories', lang)}")
+    _section("chart_categories", "explain_categories")
     if cat_f.empty:
         _empty()
     else:
@@ -340,12 +414,12 @@ def _tab_timeline(
         fig_c.update_layout(coloraxis_showscale=False, yaxis=dict(categoryorder="total ascending"))
         _style_fig(fig_c, height=min(120 + top_n_cat * 28, 640))
         st.plotly_chart(fig_c, use_container_width=True, config=_plotly_cfg())
-        st.caption(t("tip_category", lang))
 
     # -- Sentiment stacked area ---------------------------------------------
+    st.divider()
     sent = bundle.get("sentiment", pd.DataFrame())
     sent_f = _filter_days(sent, date_from, date_to)
-    st.markdown(f"##### {t('chart_sentiment_daily', lang)}")
+    _section("chart_sentiment_daily", "explain_sentiment")
     if sent_f.empty:
         _empty()
     else:
@@ -363,12 +437,12 @@ def _tab_timeline(
         )
         _style_fig(fig_s, height=400)
         st.plotly_chart(fig_s, use_container_width=True, config=_plotly_cfg())
-        st.caption(t("tip_sentiment", lang))
 
     # -- Data sources stacked area ------------------------------------------
+    st.divider()
     dsrc = bundle.get("data_source", pd.DataFrame())
     dsrc_f = _filter_days(dsrc, date_from, date_to)
-    st.markdown(f"##### {t('chart_sources_daily', lang)}")
+    _section("chart_sources_daily", "explain_sources")
     if dsrc_f.empty:
         _empty()
     else:
@@ -395,9 +469,10 @@ def _tab_timeline(
         st.plotly_chart(fig_d, use_container_width=True, config=_plotly_cfg())
 
     # -- Coordinate pipeline ------------------------------------------------
+    st.divider()
     csrc = bundle.get("coord_source", pd.DataFrame())
     csrc_f = _filter_days(csrc, date_from, date_to)
-    st.markdown(f"##### {t('chart_coord_pipeline', lang)}")
+    _section("chart_coord_pipeline", "explain_coord_pipeline")
     if csrc_f.empty:
         _empty()
     else:
@@ -414,8 +489,8 @@ def _tab_timeline(
         )
         _style_fig(fig_cc, height=380)
         st.plotly_chart(fig_cc, use_container_width=True, config=_plotly_cfg())
-        st.caption(t("tip_coordinate_source", lang))
 
+    st.divider()
     with st.expander(t("expander_raw_data", lang)):
         st.dataframe(
             _human_df(daily_f, lang), use_container_width=True, height=280, hide_index=True,
@@ -429,10 +504,16 @@ def _tab_timeline(
 def _tab_hourly(bundle: dict[str, pd.DataFrame], date_from, date_to) -> None:
     lang = _lang()
 
+    st.markdown(
+        f"<p style='color:#475569;font-size:0.95rem;margin-bottom:1rem;'>"
+        f"{t('intro_hourly', lang)}</p>",
+        unsafe_allow_html=True,
+    )
+
     hourly = bundle["hourly"]
     hourly_f = _filter_days(hourly, date_from, date_to)
 
-    st.markdown(f"##### {t('chart_heatmap', lang)}")
+    _section("chart_heatmap", "explain_heatmap")
 
     if hourly_f.empty:
         _empty()
@@ -478,7 +559,8 @@ def _tab_hourly(bundle: dict[str, pd.DataFrame], date_from, date_to) -> None:
     st.plotly_chart(fig_h, use_container_width=True, config=_plotly_cfg())
 
     # Average bar by hour
-    st.markdown(f"##### {t('chart_hourly_avg', lang)}")
+    st.divider()
+    _section("chart_hourly_avg", "explain_hourly_avg")
     avg_by_hour = (
         hourly_f.groupby("published_hour_il", as_index=False)["news_count"]
         .mean()
@@ -516,7 +598,12 @@ def _tab_geography(bundle: dict[str, pd.DataFrame], top_n_loc: int) -> None:
     lang = _lang()
     loc = bundle["locations"]
 
-    st.markdown(f"##### {t('chart_top_locations', lang)}")
+    st.markdown(
+        f"<p style='color:#475569;font-size:0.95rem;margin-bottom:1rem;'>"
+        f"{t('intro_geography', lang)}</p>",
+        unsafe_allow_html=True,
+    )
+    _section("chart_top_locations", "explain_map")
 
     if loc.empty:
         _empty("empty_run_dbt")
@@ -556,7 +643,6 @@ def _tab_geography(bundle: dict[str, pd.DataFrame], top_n_loc: int) -> None:
         margin=dict(l=0, r=0, t=0, b=0),
     )
     st.plotly_chart(fig_map, use_container_width=True, config=_plotly_cfg())
-    st.caption(t("tip_coordinate_source", lang))
 
     display_cols = ["geoname", "news_count", "coordinate_source", "final_lat", "final_lon"]
     existing = [c for c in display_cols if c in loc_top.columns]

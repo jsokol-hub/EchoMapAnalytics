@@ -74,12 +74,12 @@ def _narrative_en(
         "",
         "#### Data quality at a glance",
         "",
-        f"- **{hs}** of news have a high signal (strength >= 0.7) — "
-        "these are considered the most credible items.",
+        f"- **{hs}** of news have a high credibility score (>= 0.7) — "
+        "these are the most reliably sourced items.",
         f"- **{ms}** are confirmed by multiple sources.",
         f"- **{wc}** include geographic coordinates; **{wg}** mention a named location.",
         f"- **{wm}** contain message text.",
-        f"- Average signal strength across all items: **{avg_sig}** "
+        f"- Average credibility score across all items: **{avg_sig}** "
         f"(non-null only: **{avg_sig_nn}**).",
         "",
     ]
@@ -91,6 +91,11 @@ def _narrative_en(
             "",
         ]
     lines += [
+        "> **Note:** A sharp volume drop was observed around March 23, 2026 "
+        "(daily count fell ~78 %). The exact cause is unknown — it may reflect changes in "
+        "the data pipeline, source activity, or real-world events. "
+        "Metrics from roughly Mar 23 to Apr 2 should be interpreted with caution.",
+        "",
         "---",
         "*All timestamps use Asia/Jerusalem local time. "
         "Methodology: `echomap_dbt/docs/METHODOLOGY.md`.*",
@@ -113,12 +118,12 @@ def _narrative_ru(
         "",
         "#### Качество данных",
         "",
-        f"- **{hs}** новостей имеют высокий сигнал (>= 0.7) — "
-        "это наиболее достоверные записи.",
+        f"- **{hs}** новостей имеют высокую оценку достоверности (>= 0.7) — "
+        "это наиболее надёжно подтверждённые записи.",
         f"- **{ms}** подтверждены несколькими источниками.",
         f"- **{wc}** содержат географические координаты; **{wg}** упоминают название места.",
         f"- **{wm}** содержат текст сообщения.",
-        f"- Средняя сила сигнала по всем записям: **{avg_sig}** "
+        f"- Средняя оценка достоверности по всем записям: **{avg_sig}** "
         f"(только непустые: **{avg_sig_nn}**).",
         "",
     ]
@@ -130,6 +135,11 @@ def _narrative_ru(
             "",
         ]
     lines += [
+        "> **Примечание:** Примерно 23 марта 2026 зафиксировано резкое падение объёма "
+        "(суточный показатель снизился на ~78 %). Точная причина неизвестна — это может быть связано "
+        "с изменениями в конвейере сбора данных, активности источников или реальными событиями. "
+        "Метрики за период примерно 23 марта – 2 апреля следует интерпретировать с осторожностью.",
+        "",
         "---",
         "*Часовой пояс: Asia/Jerusalem. "
         "Методология: `echomap_dbt/docs/METHODOLOGY.md`.*",

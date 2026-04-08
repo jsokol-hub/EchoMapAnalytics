@@ -84,7 +84,14 @@ models:
                 values: [true, false]
 
       - name: data_source
-        description: Data source label (may be NULL).
+        description: Raw data source field — may contain comma-separated list of channels (may be NULL).
+
+      - name: data_source_clean
+        description: >
+          Primary data source: first entry from the comma-separated data_source list,
+          trimmed. NULL/empty mapped to 'unknown'.
+        tests:
+          - not_null
 
       - name: data_source_link
         description: Primary source URL (may be NULL).
