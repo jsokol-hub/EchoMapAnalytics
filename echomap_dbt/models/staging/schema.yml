@@ -1,0 +1,127 @@
+version: 2
+
+models:
+  - name: stg_geonews
+    description: >
+      Thin staging on the raw GeoNews table: renames, casts, text cleanup,
+      coordinate normalization, and simple quality flags.
+
+    columns:
+      - name: news_id
+        description: News identifier from the source (primary key).
+        tests:
+          - not_null
+          - unique
+
+      - name: published_at
+        description: >
+          Publication instant as timestamptz. Raw naive timestamp is interpreted as UTC
+          (server stored UTC wall time).
+        tests:
+          - not_null
+
+      - name: published_date_il
+        description: >
+          Calendar date of publication in Asia/Jerusalem (Israel local date for analytics).
+        tests:
+          - not_null
+
+      - name: published_hour_il
+        description: >
+          Hour of publication (0–23) in Asia/Jerusalem (Israel local clock).
+        tests:
+          - not_null
+
+      - name: message
+        description: Message text after trim; empty strings normalized to NULL.
+
+      - name: translation_ru
+        description: Russian translation (trim; empty string → NULL).
+
+      - name: translation_en
+        description: English translation (trim; empty string → NULL).
+
+      - name: translation_he
+        description: Hebrew translation (trim; empty string → NULL).
+
+      - name: analysis_text
+        description: >
+          First available text for analysis: English → Russian → Hebrew → message.
+
+      - name: geoname
+        description: Place or location name.
+
+      - name: category
+        description: News category.
+
+      - name: topics
+        description: Topics (raw string from source).
+
+      - name: sentiment
+        description: Sentiment label as provided by the source.
+
+      - name: signal_strength
+        description: Signal strength (real).
+
+      - name: data_source
+        description: Data source label.
+
+      - name: data_source_link
+        description: Link to the source article or page.
+
+      - name: data_source_links
+        description: Additional source links (text).
+
+      - name: source_count
+        description: Number of sources (integer).
+
+      - name: lat_num
+        description: Parser latitude (numeric); invalid text becomes NULL.
+
+      - name: lon_num
+        description: Parser longitude (numeric); invalid text becomes NULL.
+
+      - name: wikilat_num
+        description: Wikipedia latitude (numeric).
+
+      - name: wikilon_num
+        description: Wikipedia longitude (numeric).
+
+      - name: final_lat
+        description: Final latitude — coalesce(lat_num, wikilat_num).
+
+      - name: final_lon
+        description: Final longitude — coalesce(lon_num, wikilon_num).
+
+      - name: geom
+        description: Geometry from the parser (PostGIS).
+
+      - name: wikigeom
+        description: Geometry from Wikipedia (PostGIS).
+
+      - name: final_geom
+        description: Final geometry — coalesce(geom, wikigeom).
+
+      - name: coordinate_source
+        description: >
+          Source of a full coordinate pair: parser (both parser axes),
+          wiki (both wiki axes when parser pair is missing), none.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["parser", "wiki", "none"]
+
+      - name: has_message
+        description: True if a non-empty message exists after cleanup.
+
+      - name: has_geoname
+        description: True if geoname is present after cleanup.
+
+      - name: has_parser_coordinates
+        description: True if both parser coordinates (lat_num and lon_num) are set.
+
+      - name: has_wiki_coordinates
+        description: True if both Wikipedia coordinates are set.
+
+      - name: has_final_coordinates
+        description: True if final_lat and final_lon are both non-NULL.

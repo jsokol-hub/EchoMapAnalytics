@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: geonews_v1
+    database: echomap
+    schema: geonews_v1
+    tables:
+      - name: geonews_v1_0

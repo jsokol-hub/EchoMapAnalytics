@@ -32,5 +32,11 @@ clean-targets:         # directories to be removed by `dbt clean`
 models:
   echomap_dbt:
     # Config indicated by + and applies to all files under models/example/
-    example:
+    staging:
       +materialized: view
+    intermediate:
+      +materialized: view
+
+vars:
+  war_start_date: "2026-02-28 02:00:00"
+  break_1_date: "2026-04-08 08:00:00"
