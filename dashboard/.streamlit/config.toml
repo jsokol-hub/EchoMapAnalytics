@@ -5,12 +5,15 @@ port = 8501
 enableCORS = false
 enableXsrfProtection = true
 
+# Встроенная тёмная тема Streamlit (виджеты, фон, сайдбар).
+# Вернуть светлую: base = "light" и прежние background/secondary/text.
+# В UI приложения: меню ⋮ → Settings → Theme (можно Light / Dark / Use system).
 [theme]
-base = "light"
-primaryColor = "#1e4d7a"
-backgroundColor = "#ffffff"
-secondaryBackgroundColor = "#f0f3f7"
-textColor = "#141821"
+base = "dark"
+primaryColor = "#3b82f6"
+backgroundColor = "#0e1117"
+secondaryBackgroundColor = "#262730"
+textColor = "#fafafa"
 font = "sans serif"
 
 [browser]

@@ -11,8 +11,10 @@ def war_period_narrative(
     summary: pd.Series,
     top_categories: pd.DataFrame,
     lang: str = "en",
+    *,
+    compact: bool = False,
 ) -> str:
-    """Build markdown for the Summary tab — report style, not a data dump."""
+    """Build markdown for the Summary tab — report style, or a short note if compact."""
     total = int(summary["total_news"])
     d0 = summary["first_date_il"]
     d1 = summary["last_date_il"]
@@ -30,6 +32,11 @@ def war_period_narrative(
     avg_sig_nn = fmt_float(summary.get("avg_signal_strength_nonnull"))
 
     top5_parts = _top_categories(top_categories, lang)
+
+    if compact:
+        return _narrative_compact(
+            total, d0, d1, span, hs, ms, wc, top5_parts, lang,
+        )
 
     if lang == "ru":
         return _narrative_ru(
@@ -59,6 +66,32 @@ def _top_categories(df: pd.DataFrame, lang: str) -> str:
     return ", ".join(parts)
 
 
+def _narrative_compact(
+    total, d0, d1, span, hs, ms, wc, top5: str, lang: str,
+) -> str:
+    if lang == "ru":
+        lines = [
+            f"**{total:,}** новостей за **{span}** календарных дней ({d0} — {d1}). "
+            f"Высокая достоверность: **{hs}**, несколько источников: **{ms}**, с координатами: **{wc}**.",
+        ]
+        if top5:
+            lines.append(f"Топ тем: {top5}.")
+        lines.append(
+            "*Часовой пояс Asia/Jerusalem. Методология: `echomap_dbt/docs/METHODOLOGY.md`.*",
+        )
+        return "\n\n".join(lines)
+    lines = [
+        f"**{total:,}** news items across **{span}** calendar days ({d0} — {d1}). "
+        f"High credibility: **{hs}**, multi-source: **{ms}**, with coordinates: **{wc}**.",
+    ]
+    if top5:
+        lines.append(f"Top topics: {top5}.")
+    lines.append(
+        "*Asia/Jerusalem. Methodology: `echomap_dbt/docs/METHODOLOGY.md`.*",
+    )
+    return "\n\n".join(lines)
+
+
 # ---- English ---------------------------------------------------------------
 
 def _narrative_en(
@@ -66,39 +99,32 @@ def _narrative_en(
     hs, ms, wc, wg, wm, avg_sig, avg_sig_nn, top5,
 ) -> str:
     lines = [
-        "### Analytics window overview",
+        "### Period",
         "",
-        f"Between **{d0}** and **{d1}** ({span} calendar days, war days {w0}–{w1}), "
-        f"the dataset contains **{total:,}** news items. "
-        f"News was recorded on **{active}** of those days.",
+        f"**{d0}** — **{d1}** · **{total:,}** items · **{span}** calendar days "
+        f"(war days {w0}–{w1}) · news on **{active}** days.",
         "",
-        "#### Data quality at a glance",
+        "### Data quality",
         "",
-        f"- **{hs}** of news have a high credibility score (>= 0.7) — "
-        "these are the most reliably sourced items.",
-        f"- **{ms}** are confirmed by multiple sources.",
-        f"- **{wc}** include geographic coordinates; **{wg}** mention a named location.",
-        f"- **{wm}** contain message text.",
-        f"- Average credibility score across all items: **{avg_sig}** "
-        f"(non-null only: **{avg_sig_nn}**).",
+        f"- High credibility (≥0.7): **{hs}**",
+        f"- Multi-source: **{ms}**",
+        f"- With coordinates / named place / message: **{wc}** / **{wg}** / **{wm}**",
+        f"- Avg credibility (all / non-null): **{avg_sig}** / **{avg_sig_nn}**",
         "",
     ]
     if top5:
         lines += [
-            "#### Most covered topics",
+            "### Topics",
             "",
-            f"Top categories for the full period: {top5}.",
+            top5,
             "",
         ]
     lines += [
-        "> **Note:** A sharp volume drop was observed around March 23, 2026 "
-        "(daily count fell ~78 %). The exact cause is unknown — it may reflect changes in "
-        "the data pipeline, source activity, or real-world events. "
-        "Metrics from roughly Mar 23 to Apr 2 should be interpreted with caution.",
+        "> **Volume drop:** Around **23 Mar 2026** the daily count fell sharply (~78 %). "
+        "Cause unknown (pipeline, sources, or events). Treat **late Mar — early Apr** with caution.",
         "",
         "---",
-        "*All timestamps use Asia/Jerusalem local time. "
-        "Methodology: `echomap_dbt/docs/METHODOLOGY.md`.*",
+        "*Asia/Jerusalem. `echomap_dbt/docs/METHODOLOGY.md`.*",
     ]
     return "\n".join(lines)
 
@@ -110,38 +136,31 @@ def _narrative_ru(
     hs, ms, wc, wg, wm, avg_sig, avg_sig_nn, top5,
 ) -> str:
     lines = [
-        "### Обзор аналитического окна",
+        "### Период",
         "",
-        f"За период **{d0}** — **{d1}** ({span} календарных дней, дни войны {w0}–{w1}) "
-        f"в выборке **{total:,}** новостных единиц. "
-        f"Новости зафиксированы в **{active}** из этих дней.",
+        f"**{d0}** — **{d1}** · **{total:,}** записей · **{span}** календарных дней "
+        f"(дни войны {w0}–{w1}) · новости в **{active}** днях.",
         "",
-        "#### Качество данных",
+        "### Качество данных",
         "",
-        f"- **{hs}** новостей имеют высокую оценку достоверности (>= 0.7) — "
-        "это наиболее надёжно подтверждённые записи.",
-        f"- **{ms}** подтверждены несколькими источниками.",
-        f"- **{wc}** содержат географические координаты; **{wg}** упоминают название места.",
-        f"- **{wm}** содержат текст сообщения.",
-        f"- Средняя оценка достоверности по всем записям: **{avg_sig}** "
-        f"(только непустые: **{avg_sig_nn}**).",
+        f"- Высокая достоверность (≥0.7): **{hs}**",
+        f"- Несколько источников: **{ms}**",
+        f"- Координаты / название места / текст: **{wc}** / **{wg}** / **{wm}**",
+        f"- Средняя достоверность (все / непустые): **{avg_sig}** / **{avg_sig_nn}**",
         "",
     ]
     if top5:
         lines += [
-            "#### Самые освещённые темы",
+            "### Темы",
             "",
-            f"Топ категорий за весь период: {top5}.",
+            top5,
             "",
         ]
     lines += [
-        "> **Примечание:** Примерно 23 марта 2026 зафиксировано резкое падение объёма "
-        "(суточный показатель снизился на ~78 %). Точная причина неизвестна — это может быть связано "
-        "с изменениями в конвейере сбора данных, активности источников или реальными событиями. "
-        "Метрики за период примерно 23 марта – 2 апреля следует интерпретировать с осторожностью.",
+        "> **Падение объёма:** **23 марта 2026** — резкое снижение (~78 %). Причина неизвестна. "
+        "**Конец марта — начало апреля** — с осторожностью.",
         "",
         "---",
-        "*Часовой пояс: Asia/Jerusalem. "
-        "Методология: `echomap_dbt/docs/METHODOLOGY.md`.*",
+        "*Asia/Jerusalem. `echomap_dbt/docs/METHODOLOGY.md`.*",
     ]
     return "\n".join(lines)

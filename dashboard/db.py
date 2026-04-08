@@ -10,6 +10,7 @@ from urllib.parse import quote_plus
 import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
+from sqlalchemy.exc import ProgrammingError
 
 load_dotenv()
 
@@ -132,15 +133,26 @@ def load_all_marts(location_limit: int = 350) -> dict[str, pd.DataFrame]:
     """
 
     out: dict[str, pd.DataFrame] = {}
-    with get_engine().connect() as conn:
-        out["daily"] = pd.read_sql(text(sql_daily), conn)
-        out["category"] = pd.read_sql(text(sql_cat), conn)
-        out["hourly"] = pd.read_sql(text(sql_hour), conn)
-        out["locations"] = pd.read_sql(text(sql_loc), conn)
-        out["sentiment"] = pd.read_sql(text(sql_sent), conn)
-        out["data_source"] = pd.read_sql(text(sql_dsrc), conn)
-        out["coord_source"] = pd.read_sql(text(sql_csrc), conn)
-        out["war_summary"] = pd.read_sql(text(sql_summary), conn)
-        out["top_categories"] = pd.read_sql(text(sql_top_cat), conn)
+    sch = _schema()
+    try:
+        with get_engine().connect() as conn:
+            out["daily"] = pd.read_sql(text(sql_daily), conn)
+            out["category"] = pd.read_sql(text(sql_cat), conn)
+            out["hourly"] = pd.read_sql(text(sql_hour), conn)
+            out["locations"] = pd.read_sql(text(sql_loc), conn)
+            out["sentiment"] = pd.read_sql(text(sql_sent), conn)
+            out["data_source"] = pd.read_sql(text(sql_dsrc), conn)
+            out["coord_source"] = pd.read_sql(text(sql_csrc), conn)
+            out["war_summary"] = pd.read_sql(text(sql_summary), conn)
+            out["top_categories"] = pd.read_sql(text(sql_top_cat), conn)
+    except ProgrammingError as e:
+        err = str(e.orig) if getattr(e, "orig", None) else str(e)
+        if "does not exist" in err:
+            raise RuntimeError(
+                f'Mart tables are missing in schema "{sch}". Set ECHOMAP_DBT_SCHEMA to match '
+                "your dbt target `schema` in profiles.yml, or run `dbt run` in echomap_dbt "
+                "against this database so marts are built in that schema."
+            ) from e
+        raise
 
     return out

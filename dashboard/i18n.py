@@ -21,31 +21,57 @@ _STRINGS: dict[str, dict[str, str]] = {
         "ru": "EchoMap",
     },
     "subtitle": {
-        "en": "Wartime news analytics — Israel, local time (Asia/Jerusalem)",
-        "ru": "Аналитика военных новостей — Израиль, местное время (Asia/Jerusalem)",
+        "en": "Conflict news coverage · Israel local time",
+        "ru": "Освещение конфликта · местное время Израиля",
     },
 
     # -- intro blurb (markdown) --
     "intro_blurb": {
-        "en": (
-            "This dashboard shows **news coverage** during the armed conflict in Israel. "
-            "Each row in the data represents one news item (`news_id`). "
-            "All dates and hours use **Israel local time**. "
-            "Use the sidebar to adjust the date range."
-        ),
-        "ru": (
-            "Дашборд показывает **покрытие новостей** во время вооружённого конфликта в Израиле. "
-            "Каждая строка — одна новость (`news_id`). "
-            "Все даты и часы указаны по **местному времени Израиля**. "
-            "Используйте боковую панель для изменения диапазона дат."
-        ),
+        "en": "Each row is one news item. Time zone: **Asia/Jerusalem**. Adjust the date range in the sidebar.",
+        "ru": "Каждая строка — одна новость. Часовой пояс: **Asia/Jerusalem**. Диапазон дат — слева.",
+    },
+    "intro_blurb_analyst": {
+        "en": "One row = one news item (`news_id`). **Asia/Jerusalem**. Sidebar: date range and chart limits.",
+        "ru": "Строка = одна новость (`news_id`). **Asia/Jerusalem**. Слева: диапазон дат и лимиты графиков.",
     },
 
+    # -- display mode --
+    "sidebar_mode": {"en": "View", "ru": "Режим"},
+    "mode_viewer": {"en": "Viewer — highlights", "ru": "Обзор — главное"},
+    "mode_analyst": {"en": "Analyst — full", "ru": "Аналитик — полный"},
+
+    # -- hero / value screen --
+    "hero_kicker": {"en": "At a glance · full dataset", "ru": "Сводка · весь период в данных"},
+    "hero_events": {"en": "news events", "ru": "событий"},
+    "hero_places": {"en": "Hotspots", "ru": "Основные точки"},
+    "hero_drop": {
+        "en": "{date} — sharp drop (−{pct} vs prior day). Treat nearby days carefully.",
+        "ru": "{date} — резкий спад (−{pct} к пред. дню). Соседние дни — с осторожностью.",
+    },
+    "hero_charts_note": {
+        "en": "Charts below use the **selected date range** (sidebar).",
+        "ru": "Графики ниже — по **выбранному диапазону** (сайдбар).",
+    },
+
+    # -- three insights (short) --
+    "insight_where_title": {"en": "Where it happens", "ru": "Где происходит"},
+    "insight_where_caption": {"en": "Geographic concentration of mentions (coordinates when available).", "ru": "География упоминаний (если есть координаты)."},
+    "insight_when_title": {"en": "When it happens", "ru": "Когда происходит"},
+    "insight_when_caption": {"en": "Daily volume in Israel local time.", "ru": "Суточный объём, местное время Израиля."},
+    "insight_how_title": {"en": "How it’s covered", "ru": "Как освещается"},
+    "insight_how_caption": {
+        "en": "Tone (model) + topic mix (top groups; rest → Other).",
+        "ru": "Тональность (модель) + темы (топ; остальное → Прочее).",
+    },
+
+    "category_other": {"en": "Other", "ru": "Прочее"},
+
     # -- tabs --
+    "tab_overview": {"en": "Overview", "ru": "Обзор"},
     "tab_summary": {"en": "Summary", "ru": "Сводка"},
     "tab_timeline": {"en": "Timeline", "ru": "Хронология"},
-    "tab_hourly": {"en": "Hourly patterns", "ru": "Активность по часам"},
-    "tab_geography": {"en": "Geography", "ru": "География"},
+    "tab_hourly": {"en": "Hourly patterns", "ru": "По часам"},
+    "tab_geography": {"en": "Geography", "ru": "Карта"},
 
     # -- sidebar --
     "sidebar_filters": {"en": "Filters", "ru": "Фильтры"},
@@ -127,104 +153,58 @@ _STRINGS: dict[str, dict[str, str]] = {
 
     # -- tab intros --
     "intro_summary": {
-        "en": (
-            "A high-level overview of the **entire analytics window** — how many news items were "
-            "collected, how reliable the data is, which topics dominate, and what the sentiment "
-            "looks like. Use this tab to get an overall picture before diving into details."
-        ),
-        "ru": (
-            "Общий обзор **всего аналитического окна** — сколько новостей собрано, "
-            "насколько надёжны данные, какие темы доминируют и как выглядит тональность. "
-            "Используйте эту вкладку для общей картины, прежде чем углубляться в детали."
-        ),
+        "en": "Full-window quality breakdown and category table (analyst).",
+        "ru": "Качество данных и таблица категорий за весь период (аналитика).",
     },
     "intro_timeline": {
-        "en": (
-            "Day-by-day dynamics of the conflict coverage. This tab shows how the volume of news, "
-            "its quality indicators, topic distribution, and emotional tone changed over the "
-            "selected date range. Spikes often correspond to major events on the ground."
-        ),
-        "ru": (
-            "Динамика освещения конфликта по дням. Здесь показано, как менялись объём новостей, "
-            "показатели их качества, распределение по темам и эмоциональная тональность за "
-            "выбранный диапазон дат. Всплески часто соответствуют крупным событиям."
-        ),
+        "en": "Volume, quality mix, categories, sentiment, sources — for the selected range.",
+        "ru": "Объём, качество, категории, тональность, источники — за выбранный диапазон.",
     },
     "intro_hourly": {
-        "en": (
-            "When does the news cycle peak? This tab reveals intra-day patterns — which hours "
-            "see the most activity, and how this rhythm shifts across the period. "
-            "Darker cells on the heatmap = more news at that hour."
-        ),
-        "ru": (
-            "Когда наступает пик новостного цикла? Эта вкладка раскрывает суточные паттерны — "
-            "в какие часы наблюдается наибольшая активность и как этот ритм смещается "
-            "по периоду. Тёмные ячейки на тепловой карте = больше новостей в этот час."
-        ),
+        "en": "Heatmap: hour × date. Bar: average news per hour.",
+        "ru": "Теплокарта: час × дата. Столбцы: среднее по часу.",
     },
     "intro_geography": {
-        "en": (
-            "Where do the news events take place? This tab maps every location mentioned in the "
-            "coverage. Bubble size reflects the number of news items; colour intensity shows "
-            "concentration. Not all news has coordinates — see the table for details."
-        ),
-        "ru": (
-            "Где происходят новостные события? Эта вкладка отображает на карте все упомянутые "
-            "локации. Размер маркера отражает число новостей, интенсивность цвета — "
-            "концентрацию. Не у всех новостей есть координаты — подробности в таблице."
-        ),
+        "en": "Mentioned locations with coordinates — bubble size = volume.",
+        "ru": "Локации с координатами — размер = число новостей.",
     },
 
     # -- section explanations within tabs --
     "explain_daily_volume": {
-        "en": "Each point is one calendar day. Sharp rises or drops often signal major military or political events.",
-        "ru": "Каждая точка — один календарный день. Резкие подъёмы или спады часто сигнализируют о крупных военных или политических событиях.",
+        "en": "One point = one day (Israel).",
+        "ru": "Одна точка = один день (Израиль).",
     },
     "explain_quality_mix": {
-        "en": (
-            "Three quality indicators tracked daily: **High credibility** — share of items "
-            "with score >= 0.7; **Multi-source** — confirmed by 2+ sources; "
-            "**With coordinates** — has a geographic location. Higher is better."
-        ),
-        "ru": (
-            "Три показателя качества по дням: **Высокая достоверность** — доля новостей "
-            "с оценкой >= 0.7; **Неск. источников** — подтверждено 2+ источниками; "
-            "**С координатами** — есть геолокация. Чем выше — тем лучше."
-        ),
+        "en": "High credibility (≥0.7), multi-source, with coordinates — daily share of volume.",
+        "ru": "Высокая достоверность (≥0.7), несколько источников, координаты — доля по дням.",
     },
     "explain_categories": {
-        "en": "How news items are distributed across topic categories for the selected period. Categories are assigned during data collection.",
-        "ru": "Как новости распределены по тематическим категориям за выбранный период. Категории присваиваются при сборе данных.",
+        "en": "Topic labels from the pipeline (selected range).",
+        "ru": "Темы из конвейера данных (выбранный диапазон).",
     },
     "explain_sentiment": {
-        "en": "Automated tone classification of each news item. Stacked areas let you see whether coverage tilts positive, negative, or neutral over time.",
-        "ru": "Автоматическая классификация тональности каждой новости. Наложенные области показывают, смещается ли освещение в сторону позитива, негатива или нейтральности.",
+        "en": "Model-assigned tone over time.",
+        "ru": "Тональность модели по дням.",
     },
     "explain_sources": {
-        "en": "Which data sources (channels, feeds) produce the most coverage over time. Dominance of one source may indicate information concentration.",
-        "ru": "Какие источники данных (каналы, ленты) производят наибольшее покрытие. Доминирование одного источника может указывать на концентрацию информации.",
+        "en": "Which feeds dominate over time (top N in sidebar).",
+        "ru": "Какие ленты доминируют (топ N в сайдбаре).",
     },
     "explain_coord_pipeline": {
-        "en": (
-            "How coordinates are obtained: **parser** extracts them from text automatically, "
-            "**wiki** looks up the location on Wikipedia, **none** means the item has no coordinates."
-        ),
-        "ru": (
-            "Как получены координаты: **parser** извлекает из текста автоматически, "
-            "**wiki** ищет локацию в Википедии, **none** — координат нет."
-        ),
+        "en": "parser / wiki / none — how coordinates were resolved.",
+        "ru": "parser / wiki / none — откуда координаты.",
     },
     "explain_heatmap": {
-        "en": "Rows are dates (or weeks for long ranges), columns are hours 0–23 in Israel time. Brighter cells = more news published at that hour.",
-        "ru": "Строки — даты (или недели для длинных диапазонов), столбцы — часы 0–23 по Израилю. Яркие ячейки = больше новостей в этот час.",
+        "en": "Rows: day or week. Columns: hour 0–23 (Israel).",
+        "ru": "Строки: день или неделя. Столбцы: час 0–23 (Израиль).",
     },
     "explain_hourly_avg": {
-        "en": "Average number of news items published at each hour of the day across the selected period. Helps identify peak and quiet hours.",
-        "ru": "Среднее количество новостей, опубликованных в каждый час дня за выбранный период. Помогает выявить часы пик и затишья.",
+        "en": "Mean items per clock hour in the selected range.",
+        "ru": "Среднее по часам в выбранном диапазоне.",
     },
     "explain_map": {
-        "en": "Each bubble is a location mentioned in the news. Larger and warmer-coloured bubbles mean more coverage at that place.",
-        "ru": "Каждый маркер — место, упомянутое в новостях. Чем больше и теплее по цвету — тем больше новостей привязано к этому месту.",
+        "en": "Bubble size ∝ news count at that geoname.",
+        "ru": "Размер ∝ числу новостей по геониму.",
     },
 
     # -- volume anomaly --
@@ -263,8 +243,8 @@ _STRINGS: dict[str, dict[str, str]] = {
         "ru": "Длинный диапазон ({n} дней): тепловая карта агрегирована по **неделям** (строки — начало недели, понедельник).",
     },
     "summary_full_period_note": {
-        "en": "This tab covers the **full analytics window** (all dbt data). The date filter on the left affects the other three tabs.",
-        "ru": "Эта вкладка охватывает **весь аналитический период** (все данные dbt). Фильтр дат слева влияет на три другие вкладки.",
+        "en": "Full dbt window here. Sidebar dates affect Overview / Timeline / Hourly / Geography.",
+        "ru": "Здесь весь период dbt. Даты слева — для Обзор / Хронология / Часы / Карта.",
     },
     "summary_key_metrics": {"en": "Key metrics", "ru": "Ключевые показатели"},
 }
