@@ -19,6 +19,13 @@ models:
         tests:
           - not_null
 
+      - name: published_at_il
+        description: >
+          Israel local wall time from staging; same semantics as analytics_start_local /
+          break_1_local vars (compare without AT TIME ZONE in downstream).
+        tests:
+          - not_null
+
       - name: published_date_il
         description: Calendar date in Asia/Jerusalem (Israel local date).
         tests:
@@ -31,8 +38,8 @@ models:
 
       - name: war_day_number
         description: >
-          1-based day index within the analytics window: difference between published_date_il
-          and the Israel calendar date of analytics_start_local, plus 1.
+          1-based day index: published_date_il minus the calendar date of analytics_start_local
+          (from var string), plus 1.
         tests:
           - not_null
 

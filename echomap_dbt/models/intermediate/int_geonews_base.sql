@@ -8,17 +8,13 @@ with base as (
 select
     news_id,
     published_at,
+    published_at_il,
     published_date_il,
     published_hour_il,
 
     (
         published_date_il
-        - (
-            (
-                '{{ var("analytics_start_local") }}'::timestamp
-                AT TIME ZONE 'Asia/Jerusalem'
-            ) AT TIME ZONE 'Asia/Jerusalem'
-        )::date
+        - ('{{ var("analytics_start_local") }}'::timestamp::date)
         + 1
     ) as war_day_number,
 
@@ -62,5 +58,5 @@ select
     case when sentiment is not null then true else false end as has_sentiment
 
 from base
-where published_at >= ('{{ var("analytics_start_local") }}'::timestamp AT TIME ZONE 'Asia/Jerusalem')
-  and published_at <  ('{{ var("break_1_local") }}'::timestamp AT TIME ZONE 'Asia/Jerusalem')
+where published_at_il >= '{{ var("analytics_start_local") }}'::timestamp
+  and published_at_il < '{{ var("break_1_local") }}'::timestamp

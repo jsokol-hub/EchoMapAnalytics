@@ -36,6 +36,8 @@ models:
       +materialized: view
     intermediate:
       +materialized: view
+    marts:
+      +materialized: table
 
 # Project variables (used by int_geonews_base and downstream models).
 vars:

@@ -20,6 +20,13 @@ models:
         tests:
           - not_null
 
+      - name: published_at_il
+        description: >
+          Israel local wall time (timestamp without time zone) from published_at via
+          Asia/Jerusalem; use for local comparisons and with vars as Israel local strings.
+        tests:
+          - not_null
+
       - name: published_date_il
         description: >
           Calendar date of publication in Asia/Jerusalem (Israel local date for analytics).

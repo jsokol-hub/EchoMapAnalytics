@@ -14,16 +14,24 @@ base as (
 
 ),
 
+with_tz as (
+
+    select
+        *,
+        published_at AT TIME ZONE 'Asia/Jerusalem' as published_at_il
+    from base
+
+),
+
 cleaned as (
 
     select
         news_id,
 
         published_at,
-        (published_at AT TIME ZONE 'Asia/Jerusalem')::date as published_date_il,
-        extract(
-            hour from (published_at AT TIME ZONE 'Asia/Jerusalem')
-        ) as published_hour_il,
+        published_at_il,
+        published_at_il::date as published_date_il,
+        extract(hour from published_at_il) as published_hour_il,
 
         nullif(trim(message), '') as message,
         nullif(trim(translation_ru), '') as translation_ru,
@@ -76,7 +84,7 @@ cleaned as (
         geom,
         wikigeom
 
-    from base
+    from with_tz
 
 )
 
@@ -84,6 +92,7 @@ select
     news_id,
 
     published_at,
+    published_at_il,
     published_date_il,
     published_hour_il,
 
