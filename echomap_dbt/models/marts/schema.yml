@@ -164,3 +164,87 @@ models:
         description: Maximum published_at (UTC timestamptz) in the bucket.
         tests:
           - not_null
+
+  - name: mart_sentiment_daily
+    description: >
+      Daily counts by sentiment_clean from int_geonews_base (grain: date × sentiment).
+
+    columns:
+      - name: published_date_il
+        tests:
+          - not_null
+      - name: war_day_number
+        tests:
+          - not_null
+      - name: sentiment_clean
+        tests:
+          - not_null
+      - name: news_count
+        tests:
+          - not_null
+
+  - name: mart_data_source_daily
+    description: >
+      Daily counts by data source label (empty → unknown).
+
+    columns:
+      - name: published_date_il
+        tests:
+          - not_null
+      - name: war_day_number
+        tests:
+          - not_null
+      - name: data_source_clean
+        tests:
+          - not_null
+      - name: news_count
+        tests:
+          - not_null
+
+  - name: mart_coordinate_source_daily
+    description: >
+      Daily counts by coordinate_source (parser / wiki / none).
+
+    columns:
+      - name: published_date_il
+        tests:
+          - not_null
+      - name: war_day_number
+        tests:
+          - not_null
+      - name: coordinate_source
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["parser", "wiki", "none"]
+      - name: news_count
+        tests:
+          - not_null
+
+  - name: mart_war_window_summary
+    description: >
+      Single-row aggregate over the full int_geonews_base window (dbt vars). For dashboard KPIs and narrative.
+
+    columns:
+      - name: total_news
+        tests:
+          - not_null
+      - name: first_date_il
+        tests:
+          - not_null
+      - name: last_date_il
+        tests:
+          - not_null
+
+  - name: mart_top_categories_period
+    description: >
+      Category frequency over the full analytics window with share_of_total.
+
+    columns:
+      - name: category_clean
+        tests:
+          - not_null
+      - name: news_count
+        tests:
+          - not_null

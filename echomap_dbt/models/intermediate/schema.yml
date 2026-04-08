@@ -64,9 +64,14 @@ models:
         description: Raw sentiment from staging (may be NULL).
 
       - name: sentiment_clean
-        description: lower(trim(sentiment)) with NULL mapped to 'unknown'.
+        description: >
+          Normalized sentiment: positive, negative, neutral, or unknown.
+          Raw 'general' is mapped to 'neutral'; NULL/empty to 'unknown'.
         tests:
           - not_null
+          - accepted_values:
+              arguments:
+                values: ["positive", "negative", "neutral", "unknown"]
 
       - name: signal_strength
         description: Raw signal strength (real; may be NULL).

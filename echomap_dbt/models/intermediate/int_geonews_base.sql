@@ -27,7 +27,13 @@ select
     topics,
 
     sentiment,
-    coalesce(lower(trim(sentiment)), 'unknown') as sentiment_clean,
+    case
+        when lower(trim(sentiment)) = 'positive' then 'positive'
+        when lower(trim(sentiment)) = 'negative' then 'negative'
+        when lower(trim(sentiment)) in ('neutral', 'general') then 'neutral'
+        when sentiment is null or trim(sentiment) = '' then 'unknown'
+        else 'unknown'
+    end as sentiment_clean,
 
     signal_strength,
     case

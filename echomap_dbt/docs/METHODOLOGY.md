@@ -45,6 +45,22 @@ Aligned with the dbt models `stg_geonews` → `int_geonews_base` → marts. Upda
 - Source field: **`source_count`** (integer).
 - In int: **`is_multi_source = true`** if `source_count > 1`, else **false**.
 
+## Marts (dashboard-facing)
+
+Built from **`int_geonews_base`** (same analytics window):
+
+| Mart | Use |
+|------|-----|
+| `mart_daily_news_volume` | Daily KPIs and quality shares |
+| `mart_category_daily` | Category × day |
+| `mart_hourly_activity` | Date × hour heatmap |
+| `mart_location_summary` | Map / table by place + coordinates |
+| `mart_sentiment_daily` | Sentiment × day |
+| `mart_data_source_daily` | Source label × day |
+| `mart_coordinate_source_daily` | parser/wiki/none × day |
+| `mart_war_window_summary` | **One row** — full-window aggregates for narrative / KPIs |
+| `mart_top_categories_period` | Category ranking + share of total over the window |
+
 ---
 
 *Product next steps (outside this file): overview dashboard → geography → events/categories → expand methodology for publication.*
